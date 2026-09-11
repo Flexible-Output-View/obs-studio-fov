@@ -224,6 +224,10 @@ obs_source_t *OBSBasic::FindTransition(const char *name)
 
 void OBSBasic::TransitionToScene(OBSScene scene, bool force)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	obs_source_t *source = obs_scene_get_source(scene);
 	TransitionToScene(source, force);
 }
@@ -627,12 +631,21 @@ int OBSBasic::GetQuickTransitionIdx(int id)
 
 void OBSBasic::SetCurrentScene(obs_scene_t *scene, bool force)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	obs_source_t *source = obs_scene_get_source(scene);
 	SetCurrentScene(source, force);
 }
 
 void OBSBasic::SetCurrentScene(OBSSource scene, bool force)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
+
 	if (!IsPreviewProgramMode()) {
 		TransitionToScene(scene, force);
 	} else {
