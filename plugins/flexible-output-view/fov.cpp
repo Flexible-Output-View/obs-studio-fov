@@ -9,6 +9,7 @@
 #include <obs-frontend-api.h>
 
 #include "fov_service.hpp"
+#include "moq/moq-output.h"
 
 extern "C" {
 
@@ -29,6 +30,7 @@ MODULE_EXPORT const char *obs_module_description(void)
  */
 bool obs_module_load(void)
 {
+	load_moq();
 	registerFOVService();
 
 	return true;

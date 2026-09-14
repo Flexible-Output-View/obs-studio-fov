@@ -23,6 +23,8 @@ option(ENABLE_HEVC "Enable HEVC encoders" ON)
 
 # FOV Specific debug flags
 option(ENABLE_FOV_DEBUG_SRT "Enable SRT stream debugging for flexible-output-view" OFF)
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/moq/rs/libmoq")
+
 
 add_subdirectory(libobs)
 if(OS_WINDOWS)
