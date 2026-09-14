@@ -305,6 +305,8 @@ public slots:
 	void applicationShutdown() noexcept;
 
 public:
+	bool FOVUIGuards(bool reset = false);
+
 	/* `undo_s` needs to be declared after `ui` to prevent an uninitialized
 	 * warning for `ui` while initializing `undo_s`. */
 	undo_stack undo_s;

@@ -119,6 +119,8 @@ void OBSBasic::StartStreaming()
 	};
 
 	setupStreamingGuard = outputHandler->SetupStreaming(service, finish_stream_setup);
+
+	FOVUIGuards();
 }
 
 void OBSBasic::StopStreaming()
@@ -158,6 +160,8 @@ void OBSBasic::StopStreaming()
 		config_get_bool(App()->GetUserConfig(), "BasicWindow", "KeepReplayBufferStreamStops");
 	if (replayBufferWhileStreaming && !keepReplayBufferStreamStops)
 		StopReplayBuffer();
+
+	FOVUIGuards(true);
 }
 
 void OBSBasic::ForceStopStreaming()
@@ -197,6 +201,8 @@ void OBSBasic::ForceStopStreaming()
 		config_get_bool(App()->GetUserConfig(), "BasicWindow", "KeepReplayBufferStreamStops");
 	if (replayBufferWhileStreaming && !keepReplayBufferStreamStops)
 		StopReplayBuffer();
+
+	FOVUIGuards();
 }
 
 void OBSBasic::StreamDelayStarting(int sec)
@@ -211,6 +217,8 @@ void OBSBasic::StreamDelayStarting(int sec)
 	ui->statusbar->StreamDelayStarting(sec);
 
 	OnActivate();
+
+	FOVUIGuards();
 }
 
 void OBSBasic::StreamDelayStopping(int sec)
@@ -225,6 +233,7 @@ void OBSBasic::StreamDelayStopping(int sec)
 	ui->statusbar->StreamDelayStopping(sec);
 
 	OnEvent(OBS_FRONTEND_EVENT_STREAMING_STOPPING);
+	FOVUIGuards();
 }
 
 void OBSBasic::StreamingStart()
@@ -262,6 +271,8 @@ void OBSBasic::StreamingStart()
 #endif
 
 	blog(LOG_INFO, STREAMING_START);
+
+	FOVUIGuards();
 }
 
 void OBSBasic::StreamStopping()
@@ -273,6 +284,8 @@ void OBSBasic::StreamStopping()
 
 	streamingStopping = true;
 	OnEvent(OBS_FRONTEND_EVENT_STREAMING_STOPPING);
+
+	FOVUIGuards();
 }
 
 void OBSBasic::StreamingStop(int code, QString last_error)
