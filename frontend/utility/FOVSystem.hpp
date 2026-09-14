@@ -99,8 +99,8 @@ protected:
 		video_t *videoContext = nullptr; /**< Pointer to the internal video render context. */
 		OBSSource source;                /**< OBS source. */
 		OBSView view;                    /**< Internal OBS view object. */
-		OBSEncoder encoder;              /**< Instantiated video encoder object. */
-		OBSData encoderSettings;         /**< Local encoder settings data object. */
+		OBSEncoderAutoRelease encoder;              /**< Instantiated video encoder object. */
+		OBSDataAutoRelease encoderSettings;         /**< Local encoder settings data object. */
 		struct obs_video_info ovi{0};    /**< OBS Video Info. */
 
 		/**
@@ -153,8 +153,8 @@ protected:
 	struct AudioTrack {
 		std::string encoderID;   /**< Identifier string of the OBS encoder. */
 		OBSSource source;        /**< OBS source. */
-		OBSEncoder encoder;      /**< Instantiated audio encoder object. */
-		OBSData encoderSettings; /**< Local encoder settings data object. */
+		OBSEncoderAutoRelease encoder;      /**< Instantiated audio encoder object. */
+		OBSDataAutoRelease encoderSettings; /**< Local encoder settings data object. */
 
 		/**
          * @brief Construct a new AudioTrack object.
@@ -224,8 +224,8 @@ private:
 
 	obs_output_t *ffmpegMpegtsMuxerOutput = nullptr; /**< Pointer to the MPEG-TS muxer output. */
 
-	obs_data_t *videoSettings; /**< Pointer to the default video settings data object. */
-	obs_data_t *audioSettings; /**< Pointer to the default audio settings data object. */
+	OBSDataAutoRelease videoSettings; /**< Pointer to the default video settings data object. */
+	OBSDataAutoRelease audioSettings; /**< Pointer to the default audio settings data object. */
 
 	OBSEncoderGroup encoderGroup; /**< Wrapper containing the shared encoder group object. */
 	std::deque<std::unique_ptr<VideoTrack>>

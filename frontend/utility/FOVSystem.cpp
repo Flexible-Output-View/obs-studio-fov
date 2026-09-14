@@ -15,8 +15,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <mutex>
-#include <stdexcept>
 #include <string>
 
 /**
@@ -70,7 +68,6 @@ bool FOVSystem::VideoTrack::refreshVideoSettings()
 	if (obs_encoder_video(encoder) != nullptr) {
 		blog(LOG_INFO, "FOV: encoder '%s' has video set, recreating", obs_encoder_get_name(encoder));
 		std::string encoderName = obs_encoder_get_name(encoder);
-		obs_encoder_release(encoder);
 		encoder = obs_video_encoder_create(encoderID.c_str(), encoderName.c_str(), encoderSettings, nullptr);
 		if (videoContext) {
 			obs_view_remove(view);
@@ -113,8 +110,6 @@ bool FOVSystem::VideoTrack::changeEncoderType(const std::string &encoderID)
 
 	std::string encoderName = obs_encoder_get_name(encoder);
 	this->encoderID = encoderID;
-
-	obs_encoder_release(encoder);
 
 	encoder = obs_video_encoder_create(this->encoderID.c_str(), encoderName.c_str(), encoderSettings, nullptr);
 
@@ -182,10 +177,7 @@ FOVSystem::VideoTrack::~VideoTrack()
 	}
 	if (view) {
 		obs_view_set_source(view, 0, nullptr);
-		if (videoContext) {
-			obs_view_remove(view);
-			videoContext = nullptr;
-		}
+		obs_view_remove(view);
 	}
 }
 
@@ -212,7 +204,6 @@ bool FOVSystem::AudioTrack::refreshAudioSettings()
 	if (obs_encoder_audio(encoder) != nullptr) {
 		blog(LOG_INFO, "FOV: encoder '%s' has audio set, recreating", obs_encoder_get_name(encoder));
 		std::string encoderName = obs_encoder_get_name(encoder);
-		obs_encoder_release(encoder);
 
 		auto mixerMask = obs_source_get_audio_mixers(source);
 		size_t mixerIndex = GetFirstMixerIndex(mixerMask);
@@ -243,8 +234,6 @@ bool FOVSystem::AudioTrack::changeEncoderType(const std::string &encoderID)
 
 	std::string encoderName = "FOV audio track " + std::string(obs_source_get_name(source));
 	this->encoderID = encoderID;
-
-	obs_encoder_release(encoder);
 
 	auto mixerMask = obs_source_get_audio_mixers(source);
 	size_t mixerIndex = GetFirstMixerIndex(mixerMask);
@@ -332,8 +321,6 @@ FOVSystem::FOVSystem()
 
 FOVSystem::~FOVSystem()
 {
-	obs_data_release(videoSettings);
-	obs_data_release(audioSettings);
 }
 
 /**
