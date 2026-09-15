@@ -21,7 +21,7 @@
 
 #include "curl_wrapper.hpp"
 
-#ifdef DEBUG_SRT_STREAM
+#ifdef DEBUG_INGEST_STREAM
      #define API_FFMPEG_START_ROUTE "/ffmpeg/register/debug" /** Debug API URL */
 #else
      #define API_FFMPEG_START_ROUTE "/ffmpeg/register"  /**< API route used to initiate multi-track streaming. */
