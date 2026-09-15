@@ -32,7 +32,8 @@ enum class ListOpt : int {
 	ShowAll = 1,
 	Custom,
 	WHIP,
-	FOV,
+	FOV_SRT,
+	FOV_MOQ
 };
 
 enum class Section : int {
@@ -52,7 +53,13 @@ inline bool OBSBasicSettings::IsWHIP() const
 
 inline bool OBSBasicSettings::IsFOV() const
 {
-	return ui->service->currentData().toInt() == (int)ListOpt::FOV;
+	return (ui->service->currentData().toInt() == (int)ListOpt::FOV_SRT) ||
+		   (ui->service->currentData().toInt() == (int)ListOpt::FOV_MOQ);
+}
+
+inline bool OBSBasicSettings::IsFOVMOQ() const
+{
+	return (ui->service->currentData().toInt() == (int)ListOpt::FOV_MOQ);
 }
 
 void OBSBasicSettings::InitStreamPage()
@@ -109,7 +116,8 @@ void OBSBasicSettings::LoadStream1Settings()
 	bool is_rtmp_custom = (strcmp(type, "rtmp_custom") == 0);
 	bool is_rtmp_common = (strcmp(type, "rtmp_common") == 0);
 	bool is_whip = (strcmp(type, "whip_custom") == 0);
-	bool is_fov = (strcmp(type, "fov_service") == 0);
+	bool is_fov = (strcmp(type, "fov_service_srt") == 0) || (strcmp(type, "fov_service_moq") == 0);
+	bool is_moq = (strcmp(type, "fov_service_moq") == 0);
 
 	loading = true;
 
@@ -137,7 +145,12 @@ void OBSBasicSettings::LoadStream1Settings()
 		ui->authPw->setText(QT_UTF8(password));
 		ui->useAuth->setChecked(use_auth);
 	} else if (is_fov) {
-		int idx = ui->service->findData(QVariant((int)ListOpt::FOV));
+		int idx = 0;
+		if (is_moq) {
+			idx = ui->service->findData(QVariant((int)ListOpt::FOV_MOQ));
+		} else {
+			idx = ui->service->findData(QVariant((int)ListOpt::FOV_SRT));
+		}
 		ui->service->setCurrentIndex(idx);
 	} else {
 		int idx = ui->service->findText(service);
@@ -276,7 +289,11 @@ void OBSBasicSettings::SaveStream1Settings()
 	} else if (whip) {
 		service_id = "whip_custom";
 	} else if (fov) {
-		service_id = "fov_service";
+		if (IsFOVMOQ()) {
+			service_id = "fov_service_moq";
+		} else {
+			service_id = "fov_service_srt";
+		}
 	}
 
 	obs_service_t *oldService = main->GetService();
@@ -494,7 +511,10 @@ void OBSBasicSettings::LoadServices(bool showAll)
 		ui->service->addItem(QTStr("WHIP"), QVariant((int)ListOpt::WHIP));
 	}
 	if (obs_output_get_display_name("ffmpeg_mpegts_muxer") != nullptr) {
-		ui->service->addItem(QString("FOV - Multitrack"), QVariant((int)ListOpt::FOV));
+		ui->service->addItem(QString("FOV - Multitrack [SRT]"), QVariant((int)ListOpt::FOV_SRT));
+	}
+	if (obs_output_get_display_name("fov_moq_output") != nullptr) {
+		ui->service->addItem(QString("FOV - Multitrack [MoQ]"), QVariant((int)ListOpt::FOV_MOQ));
 	}
 	if (!showAll) {
 		ui->service->addItem(QTStr("Basic.AutoConfig.StreamPage.Service.ShowAll"),
@@ -697,7 +717,11 @@ QString OBSBasicSettings::FindProtocol()
 			return QString("RIST");
 
 	} else if (IsFOV()) {
-		return QString("SRT");
+		if(IsFOVMOQ()) {
+			return QString("Moq");
+		} else {
+			return QString("SRT");
+		}
 	} else {
 		obs_properties_t *props = obs_get_service_properties("rtmp_common");
 		obs_property_t *services = obs_properties_get(props, "service");
@@ -783,7 +807,11 @@ OBSService OBSBasicSettings::SpawnTempService()
 	} else if (whip) {
 		service_id = "whip_custom";
 	} else if (fov) {
-		service_id = "fov_service";
+		if (IsFOVMOQ()) {
+			service_id = "fov_service_moq";
+		} else {
+			service_id = "fov_service_srt";
+		}
 	}
 
 	OBSDataAutoRelease settings = obs_data_create();

@@ -675,7 +675,7 @@ void register_moq_output()
 	const char *video_codecs = "h264;hevc;av1";
 
 	struct obs_output_info info = {};
-	info.id = "moq_output";
+	info.id = "fov_moq_output";
 	info.flags = OBS_OUTPUT_AV | base_flags;
 	info.get_name = [](void *) -> const char * {
 		return "MoQ Output";
@@ -707,12 +707,12 @@ void register_moq_output()
 
 	obs_register_output(&info);
 
-	info.id = "moq_output_video";
+	info.id = "fov_moq_output_video";
 	info.flags = OBS_OUTPUT_VIDEO | base_flags;
 	info.encoded_audio_codecs = nullptr;
 	obs_register_output(&info);
 
-	info.id = "moq_output_audio";
+	info.id = "fov_moq_output_audio";
 	info.flags = OBS_OUTPUT_AUDIO | base_flags;
 	info.encoded_video_codecs = nullptr;
 	info.encoded_audio_codecs = audio_codecs;

@@ -31,7 +31,8 @@ MODULE_EXPORT const char *obs_module_description(void)
 bool obs_module_load(void)
 {
 	load_moq();
-	registerFOVService();
+	registerFOVServiceSRT();
+	registerFOVServiceMOQ();
 
 	return true;
 }
