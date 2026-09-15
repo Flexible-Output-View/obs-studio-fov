@@ -255,5 +255,5 @@ inline bool checkIsFOV(const obs_service_t *service)
 	if (service == nullptr) {
 		return false;
 	}
-	return (strcmp(obs_service_get_id(service), "fov_service") == 0);
+	return (strcmp(obs_service_get_id(service), "fov_service_srt") == 0) || (strcmp(obs_service_get_id(service), "fov_service_moq") == 0);
 }

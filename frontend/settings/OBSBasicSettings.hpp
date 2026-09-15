@@ -206,6 +206,7 @@ private:
 	bool IsCustomService() const;
 	inline bool IsWHIP() const;
 	inline bool IsFOV() const;
+	inline bool IsFOVMOQ() const;
 	void LoadServices(bool showAll);
 	void OnOAuthStreamKeyConnected();
 	void OnAuthConnected();

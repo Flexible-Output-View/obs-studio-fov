@@ -21,7 +21,7 @@
 
 #include "curl_wrapper.hpp"
 
-#ifdef DEBUG_SRT_STREAM
+#ifdef DEBUG_INGEST_STREAM
      #define API_FFMPEG_START_ROUTE "/ffmpeg/register/debug" /** Debug API URL */
 #else
      #define API_FFMPEG_START_ROUTE "/ffmpeg/register"  /**< API route used to initiate multi-track streaming. */
@@ -33,7 +33,8 @@ extern "C" {
 /**
  * @brief Register the custom FOV service module with the OBS framework core.
  */
-void registerFOVService(void);
+void registerFOVServiceSRT(void);
+void registerFOVServiceMOQ(void);
 }
 
 /**
@@ -105,13 +106,14 @@ public:
 
 private:
 	std::string backendURL; /**< Configured base address for backend HTTP API orchestration. */
-	std::string srtURL;     /**< Resolved target ingestion endpoint URL for the multi-track stream output. */
+	std::string ingestURL;  /**< Resolved target ingestion endpoint URL for the multi-track stream output. */
 	std::string streamKey;  /**< Authentication token string assigned to validate the active streaming session. */
 	size_t nbVideoTracks;   /**< Cached count tracking the number of active concurrent video pipelines. */
 	size_t nbAudioTracks;   /**< Cached count tracking the number of active concurrent audio buses. */
 	nlohmann::json videoTrackNames;
 	nlohmann::json audioTrackNames;
 	bool started;           /**< Internal state tracking flag confirming if backend session signaling has executed successfully. */
+     obs_service_t *service;
 };
 
 bool obs_array_to_json(obs_data_array_t *array, nlohmann::json &json_out, const std::string &objectName = "");
