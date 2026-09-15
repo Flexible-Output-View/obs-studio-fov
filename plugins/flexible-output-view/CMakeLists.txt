@@ -21,6 +21,10 @@ target_include_directories(flexible-output-view PRIVATE
     ./service
 )
 
+if(MSVC)
+    set_property(TARGET flexible-output-view APPEND_STRING PROPERTY LINK_FLAGS_DEBUG " /NODEFAULTLIB:MSVCRT")
+endif()
+
 target_link_libraries(flexible-output-view PRIVATE OBS::libobs $<$<PLATFORM_ID:Windows>:OBS::w32-pthreads> OBS::frontend-api CURL::libcurl moq)
 
 set_target_properties_obs(flexible-output-view PROPERTIES FOLDER plugins PREFIX "")
