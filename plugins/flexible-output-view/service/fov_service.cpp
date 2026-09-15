@@ -189,6 +189,8 @@ const char *FOVService::getConnectInfo(uint32_t type) noexcept
 	switch ((enum obs_service_connect_info)type) {
 	case OBS_SERVICE_CONNECT_INFO_SERVER_URL:
 		return getURL();
+	case OBS_SERVICE_CONNECT_INFO_STREAM_KEY:
+		return streamKey.c_str();
 	default:
 		break;
 	}
@@ -222,7 +224,8 @@ const char *FOVService::getURL(void) noexcept
 	jsonPayload["audioTracks"] = nbAudioTracks;
 	jsonPayload["audioTrackNames"] = audioTrackNames;
 
-	blog(LOG_INFO, "FOV Service making request to backend %s\nPayload: %s\n", APIRoute.c_str(), jsonPayload.dump().c_str());
+	blog(LOG_INFO, "FOV Service making request to backend %s\nPayload: %s\n", APIRoute.c_str(),
+	     jsonPayload.dump().c_str());
 	try {
 		SimpleCurlRequest request(APIRoute, SimpleCurlRequest::HTTP_POST);
 
@@ -297,7 +300,8 @@ extern "C" {
 /**
  * @brief Register the custom FOV service module with the OBS framework core.
  */
-void registerFOVServiceSRT(void) {
+void registerFOVServiceSRT(void)
+{
 	struct obs_service_info info = {};
 
 	info.id = "fov_service_srt";
@@ -350,7 +354,8 @@ void registerFOVServiceSRT(void) {
 	obs_register_service(&info);
 }
 
-void registerFOVServiceMOQ(void) {
+void registerFOVServiceMOQ(void)
+{
 	struct obs_service_info info = {};
 
 	info.id = "fov_service_moq";

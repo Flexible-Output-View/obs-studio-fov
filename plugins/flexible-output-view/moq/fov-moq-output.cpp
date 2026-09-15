@@ -145,6 +145,12 @@ bool MoQOutput::Start()
 	const char *path_value = obs_service_get_connect_info(service, OBS_SERVICE_CONNECT_INFO_STREAM_KEY);
 	path = path_value ? path_value : "";
 
+	if (std::string(path_value).find(".hang") == std::string::npos) {
+		blog(LOG_ERROR, "Could not start the stream: the stream key is not ending with .hang");
+		state->SignalStop(OBS_OUTPUT_BAD_PATH);
+		return false;
+	}
+
 	bool found_encoder = false;
 	for (uint32_t idx = 0; idx < MAX_OUTPUT_VIDEO_ENCODERS; idx++) {
 		if (obs_output_get_video_encoder2(output, idx)) {
@@ -247,6 +253,7 @@ bool MoQOutput::Start()
 	}
 
 	obs_output_begin_data_capture(output, 0);
+	moq_publish_set_announce(broadcast, true);
 
 	return true;
 }
