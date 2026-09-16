@@ -8,11 +8,11 @@ rm -rf build
 fi
 
 
-cmake --preset=ubuntu -DCMAKE_BUILD_TYPE=Debug -DLINUX_PORTABLE=ON -DENABLE_RELOCATABLE=ON -DENABLE_PORTABLE_CONFIG=ON .
+cmake --preset macos -DCMAKE_BUILD_TYPE=Debug -DENABLE_WEBRTC=On -DENABLE_RELOCATABLE=ON -DENABLE_PORTABLE_CONFIG=ON
 
-cd build
+cd build_macos
 
-cmake --build .
+cmake --build . --config Debug
 
 read -p "Run OBS now ? [y/N]: " -n 1 -r
 if [[ $REPLY =~ ^[Yy]$ ]]
