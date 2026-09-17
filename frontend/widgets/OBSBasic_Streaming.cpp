@@ -336,6 +336,7 @@ void OBSBasic::StreamingStop(int code, QString last_error)
 		 * reconnects are handled in the output, not in the UI */
 		use_last_error = true;
 		errorDescription = Str("Output.ConnectFail.Disconnected");
+		FOVUIGuards(true);
 	}
 
 	if (use_last_error && !last_error.isEmpty())
