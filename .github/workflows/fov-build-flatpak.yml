@@ -1,0 +1,37 @@
+name: FOV Flatpak Build
+
+on:
+  push:
+    branches: [dev, master, flatpak]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flatpak_build:
+    name: FOV - Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.8
+      options: --privileged
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Build Flatpak Bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: build-aux/com.flexible_output_view.FOV.json
+          bundle: FOV-x86_64.flatpak
+          branch: ${{ github.ref_name }}
+
+      - name: Upload Flatpak Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: FOV-linux-x64-flatpak-release
+          path: FOV-x86_64.flatpak

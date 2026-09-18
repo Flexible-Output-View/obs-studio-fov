@@ -2,7 +2,7 @@
  * @file fov_service.hpp
  * @author The FOV Team
  * @brief Header file for the FOVService class managing backend API signaling and connection states.
- * @version 0.1
+ * @version 1.2
  * @date 2026-02-07
  */
 
