@@ -2,7 +2,7 @@
  * @file fov_service.cpp
  * @author The FOV Team
  * @brief Implementation of the FOVService class managing backend API signaling and connection states.
- * @version 0.1
+ * @version 1.2
  * @date 2026-02-07
  */
 
