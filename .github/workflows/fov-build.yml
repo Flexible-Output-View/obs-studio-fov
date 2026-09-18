@@ -41,6 +41,7 @@ jobs:
     name: FOV - Build on Windows
     runs-on: [ self-hosted, windows, x64 ]
     timeout-minutes: 90
+    if: github.event_name != 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -73,6 +74,7 @@ jobs:
     name: FOV - Build on macOS
     runs-on: macos-15
     timeout-minutes: 90
+    if: github.event_name != 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
