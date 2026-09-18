@@ -166,3 +166,44 @@ jobs:
         with:
           name: cppcheck
           path: check.txt
+
+  codechecker-scan:
+    name: CodeChecker C++ Scan
+    runs-on: [ self-hosted, linux, x64, ubuntu ]
+    needs: check_program_compilation_linux
+    timeout-minutes: 60
+    if: >-
+      (github.event_name == 'push' && (github.ref_name == 'dev' || github.ref_name == 'master' || github.ref_name == '136-ci-avancée-pour-obs-cppcheck-et-clangd')) ||
+      (github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'master'))
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Download Linux Build Folder
+        uses: actions/download-artifact@v7
+        with:
+          name: linux-build-folder
+          path: build/
+
+      - name: Run CodeChecker Analysis
+        run: |
+          CodeChecker analyze ./build/compile_commands.json --output ./reports
+
+      - name: Export to SARIF
+        if: always()
+        run: |
+          CodeChecker parse ./reports --export sarif --output results.sarif
+
+      - name: Upload results to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results.sarif
