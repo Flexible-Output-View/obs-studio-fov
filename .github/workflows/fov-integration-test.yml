@@ -37,7 +37,7 @@ jobs:
 
       - name: Install FOV Software prerequisites
         working-directory: obs-studio-fov
-        run: ./requirements.sh
+        run: sudo ./requirements.sh
 
       - name: Build FOV Software
         working-directory: obs-studio-fov
