@@ -2,7 +2,6 @@ name: FOV Windows & macOS Builds
 
 on:
   push:
-    branches: [dev, master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
