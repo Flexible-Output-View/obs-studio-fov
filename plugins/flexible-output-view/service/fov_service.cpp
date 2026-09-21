@@ -111,8 +111,14 @@ void FOVService::update(obs_data_t *settings) noexcept
 	size_t newVideoTracks = 0;
 	size_t newAudioTracks = 0;
 
-	backendURL = obs_data_get_string(settings, "server");
-	streamKey = obs_data_get_string(settings, "key");
+	std::string server = obs_data_get_string(settings, "server");
+	std::string key = obs_data_get_string(settings, "key");
+	if (!server.empty()) {
+		backendURL = server;
+	}
+	if (!key.empty()) {
+		streamKey = key;
+	}
 
 	newVideoTracks = obs_data_get_int(settings, "video_encoder_count");
 	newAudioTracks = obs_data_get_int(settings, "audio_track_count");
@@ -130,15 +136,6 @@ void FOVService::update(obs_data_t *settings) noexcept
 	}
 	if (audioNames) {
 		obs_data_array_release(audioNames);
-	}
-
-	if (newVideoTracks <= 0) {
-		blog(LOG_WARNING, "FOV Service invalid 'video_encoder_count' property, defaulting to 1");
-		newVideoTracks = 1;
-	}
-	if (newAudioTracks <= 0) {
-		blog(LOG_WARNING, "FOV Service invalid 'audio_track_count' property, defaulting to 1");
-		newAudioTracks = 1;
 	}
 
 	this->nbVideoTracks = newVideoTracks;

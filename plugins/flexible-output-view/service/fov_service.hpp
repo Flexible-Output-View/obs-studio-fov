@@ -112,6 +112,7 @@ private:
 	nlohmann::json videoTrackNames;
 	nlohmann::json audioTrackNames;
 	bool started;           /**< Internal state tracking flag confirming if backend session signaling has executed successfully. */
+     bool lock_config;       /**< Lock to prevent config changes */
 };
 
 bool obs_array_to_json(obs_data_array_t *array, nlohmann::json &json_out, const std::string &objectName = "");

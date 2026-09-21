@@ -51,19 +51,6 @@ jobs:
         working-directory: obs-studio-fov
         run: ./.github/scripts/FOV/build_integration_test.sh
 
-      - name: Configure OBS Scene Media Paths
-        run: |
-          MEDIA_PATH="$GITHUB_WORKSPACE/obs-studio-fov/plugins/flexible-output-view/integration_test/ressources/Big_Buck_Bunny_360_10s_20MB.mp4"
-          SCENE_FILE="obs-studio-fov/plugins/flexible-output-view/integration_test/ressources/config/obs-studio/basic/scenes/Untitled.json"
-
-          # Replace CHANGEMEPATH with the absolute path in the copied configuration file
-          sed -i "s|CHANGEMEPATH|${MEDIA_PATH}|g" "$SCENE_FILE"
-
-      - name: Copy OBS Test Config
-        working-directory: obs-studio-fov
-        run: |
-          cp -r plugins/flexible-output-view/integration_test/ressources/config .
-
       - name: Start FOV Headlessly & Auto-Stream
         working-directory: obs-studio-fov
         run: |
