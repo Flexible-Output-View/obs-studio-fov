@@ -1,0 +1,117 @@
+name: FOV Integration Test
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - master
+
+env:
+  IS_RELEASE_BRANCH: ${{ github.ref_name == 'dev' || github.ref_name == 'master' }}
+
+jobs:
+  integration_test:
+    name: FOV - E2E Integration Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Setup Docker
+        uses: docker/setup-docker-action@v5.5.0
+
+      - name: Checkout FOV Software repository
+        uses: actions/checkout@v7
+        with:
+          path: obs-studio-fov
+          submodules: recursive
+
+      - name: Clone FOV Web repository (${{ github.base_ref }})
+        run: git clone -b ${{ github.base_ref }} --recurse-submodules https://github.com/Flexible-Output-View/web-fov.git
+
+      - name: Prepare test environment dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb pulseaudio netcat-openbsd ffmpeg jq curl
+
+          pulseaudio -D --exit-idle-time=-1
+          pacmd load-module module-null-sink sink_name=DummySink
+
+      - name: Run FOV Web Stack
+        working-directory: web-fov
+        run: |
+          cp .env.example .env
+          mkdir -p media var/media hls
+          sudo chmod -R 777 .
+          docker compose up -d --build --wait
+
+      - name: Install FOV Software prerequisites
+        working-directory: obs-studio-fov
+        run: sudo ./requirements.sh
+
+      - name: Build FOV Software
+        working-directory: obs-studio-fov
+        run: ./.github/scripts/FOV/build_integration_test.sh
+
+      - name: Start FOV Headlessly & Auto-Stream
+        working-directory: obs-studio-fov
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+            build/rundir/Release/bin/obs --portable > ../obs-stdout.log 2>&1 &
+
+      - name: Verify Stream via API
+        run: |
+          echo "Waiting for stream with 2 video and 2 audio tracks in /api/streams/available..."
+
+          MAX_RETRIES=180
+          COUNT=0
+
+          until [ $COUNT -ge $MAX_RETRIES ]; do
+            RESPONSE=$(curl -s http://localhost:4000/api/streams/available || true)
+
+            # Parse counts with fallback to 0
+            STREAM_COUNT=$(echo "$RESPONSE" | jq '. | length' 2>/dev/null || echo "0")
+            VIDEO_COUNT=$(echo "$RESPONSE" | jq '.[0].tracks | map(select(.isVideo == true)) | length' 2>/dev/null || echo "0")
+            AUDIO_COUNT=$(echo "$RESPONSE" | jq '.[0].tracks | map(select(.isAudio == true)) | length' 2>/dev/null || echo "0")
+
+            # Log status every 5 seconds or whenever streams begin appearing
+            if [ $((COUNT % 5)) -eq 0 ] || [ "$STREAM_COUNT" -gt 0 ]; then
+              echo "[$COUNT/${MAX_RETRIES}s] Active Streams: $STREAM_COUNT | Video Tracks: $VIDEO_COUNT | Audio Tracks: $AUDIO_COUNT"
+
+              # Print full payload if a stream is detected but tracks aren't ready yet
+              if [ "$STREAM_COUNT" -gt 0 ] && ([ "$VIDEO_COUNT" -ne 2 ] || [ "$AUDIO_COUNT" -ne 2 ]); then
+                echo "Current API Payload:"
+                echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
+              fi
+            fi
+
+            # Check target conditions
+            if [ "$STREAM_COUNT" -gt 0 ] && [ "$VIDEO_COUNT" -eq 2 ] && [ "$AUDIO_COUNT" -eq 2 ]; then
+              echo "Stream successfully verified with 2 video and 2 audio tracks!"
+              echo "Final API Payload:"
+              echo "$RESPONSE" | jq .
+              exit 0
+            fi
+
+            COUNT=$((COUNT+1))
+            sleep 1
+          done
+
+          echo "ERROR: Stream with required tracks was not detected after $MAX_RETRIES seconds."
+          echo "Last raw API response:"
+          echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
+          echo "=== Last 50 lines of obs-stdout.log ==="
+          tail -n 50 obs-stdout.log || true
+          exit 1
+
+      - name: Collect Docker Logs
+        if: always()
+        working-directory: web-fov
+        run: docker compose logs > ../docker-web-stack.log
+
+      - name: Upload Test Artifacts & Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-logs
+          path: |
+            docker-web-stack.log
+            obs-stdout.log

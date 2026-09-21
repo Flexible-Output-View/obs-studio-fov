@@ -23,6 +23,8 @@ option(ENABLE_HEVC "Enable HEVC encoders" ON)
 
 # FOV Specific debug flags
 option(ENABLE_FOV_DEBUG_SRT "Enable SRT stream debugging for flexible-output-view" OFF)
+option(FOV_INTEGRATION_TEST "Build FOV as an integration test" OFF)
+
 
 add_subdirectory(libobs)
 if(OS_WINDOWS)
