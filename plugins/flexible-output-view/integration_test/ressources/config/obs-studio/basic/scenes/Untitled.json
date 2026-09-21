@@ -161,11 +161,11 @@
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
+                "hw_decode": false,
                 "local_file": "CHANGEMEPATH",
-                "hw_decode": true,
                 "looping": true
             },
-            "mixers": 255,
+            "mixers": 1,
             "sync": 0,
             "flags": 0,
             "volume": 1.0,
@@ -198,11 +198,11 @@
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
+                "hw_decode": false,
                 "local_file": "CHANGEMEPATH",
-                "hw_decode": true,
                 "looping": true
             },
-            "mixers": 255,
+            "mixers": 2,
             "sync": 0,
             "flags": 0,
             "volume": 1.0,

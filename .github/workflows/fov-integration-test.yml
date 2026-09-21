@@ -39,6 +39,8 @@ jobs:
         working-directory: web-fov
         run: |
           cp .env.example .env
+          mkdir -p media var/media hls
+          sudo chmod -R 777 .
           docker compose up -d --build --wait
 
       - name: Install FOV Software prerequisites
@@ -66,13 +68,13 @@ jobs:
         working-directory: obs-studio-fov
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
-            build/rundir/Release/bin/obs --portable --startstreaming > ../obs-stdout.log 2>&1 &
+            build/rundir/Release/bin/obs --portable > ../obs-stdout.log 2>&1 &
 
       - name: Verify Stream via API
         run: |
           echo "Waiting for stream with 2 video and 2 audio tracks in /api/streams/available..."
 
-          MAX_RETRIES=45
+          MAX_RETRIES=180
           COUNT=0
 
           until [ $COUNT -ge $MAX_RETRIES ]; do
@@ -106,7 +108,7 @@ jobs:
 
       - name: Upload Test Artifacts & Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-test-logs
           path: |
