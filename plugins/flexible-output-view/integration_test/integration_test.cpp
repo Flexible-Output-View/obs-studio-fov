@@ -2,7 +2,7 @@
  * @file integration_test.cpp
  * @author The FOV Team
  * @brief Implementation of the automated end-to-end integration test
- * @version 0.2
+ * @version 0.4
  * @date 2026-09-21
  */
 
@@ -12,10 +12,23 @@
 #include "obs-frontend-api.h"
 #include "obs-module.h"
 #include "util/platform.h"
+
 #include <chrono>
 #include <sstream>
 #include <thread>
 #include <vector>
+
+static OBSSourceAutoRelease g_sourceA;
+static OBSSourceAutoRelease g_sourceB;
+static OBSServiceAutoRelease g_fovService;
+
+void disable_default_audio_sources()
+{
+	blog(LOG_INFO, "[FOV Test] Unbinding default desktop and mic audio sources...");
+	for (uint32_t channel = 1; channel <= 6; ++channel) {
+		obs_set_output_source(channel, nullptr);
+	}
+}
 
 bool find_media_file(char *out_path, size_t max_len)
 {
@@ -143,9 +156,8 @@ void start_fov()
 {
 	ensure_obs_video_audio_initialized();
 
-	OBSSourceAutoRelease mSourceA;
-	OBSSourceAutoRelease mSourceB;
-	OBSServiceAutoRelease FOVService;
+	disable_default_audio_sources();
+
 	char ABSPath[4090] = {0};
 
 	bool found = find_media_file(ABSPath, sizeof(ABSPath));
@@ -160,25 +172,29 @@ void start_fov()
 		blog(LOG_ERROR, "[FOV Test] Could not retrieve active scene!");
 	}
 
-	create_source(mSourceA, ABSPath, "video1");
-	create_source(mSourceB, ABSPath, "video2");
+	create_source(g_sourceA, ABSPath, "video1");
+	create_source(g_sourceB, ABSPath, "video2");
 
 	if (scene) {
-		if (mSourceA)
-			obs_scene_add(scene, mSourceA);
-		if (mSourceB)
-			obs_scene_add(scene, mSourceB);
+		if (g_sourceA)
+			obs_scene_add(scene, g_sourceA);
+		if (g_sourceB)
+			obs_scene_add(scene, g_sourceB);
 	}
 
-	configure_service(FOVService);
-	if (FOVService) {
-		obs_frontend_set_streaming_service(FOVService);
-        std::this_thread::sleep_for(std::chrono::seconds(20));
-		obs_frontend_streaming_start();
-		blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
+	configure_service(g_fovService);
+	if (g_fovService) {
+		obs_frontend_set_streaming_service(g_fovService);
+		blog(LOG_INFO,
+		     "[FOV Test] Service attached. Deferring stream start by 2 seconds for media & signal initialization...");
+
+		std::this_thread::sleep_for(std::chrono::seconds(10));
+
+        obs_frontend_streaming_start();
+        blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
 	} else {
 		blog(LOG_ERROR, "[FOV Test] Failed to create FOV streaming service!");
-        exit(42);
+		exit(42);
 	}
 }
 
@@ -206,6 +222,6 @@ bool obs_module_load(void)
 
 void obs_module_unload(void)
 {
-	return;
+    return;
 }
 }
