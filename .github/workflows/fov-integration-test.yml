@@ -24,8 +24,8 @@ jobs:
           path: obs-studio-fov
           submodules: recursive
 
-      - name: Clone FOV Web repository (${{ github.base_ref }})
-        run: git clone -b ${{ github.base_ref }} --recurse-submodules https://github.com/Flexible-Output-View/web-fov.git
+      - name: Clone FOV Web repository (dev)
+        run: git clone -b dev --recurse-submodules https://github.com/Flexible-Output-View/web-fov.git
 
       - name: Prepare test environment dependencies
         run: |
