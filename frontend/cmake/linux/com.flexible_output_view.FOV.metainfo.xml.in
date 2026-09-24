@@ -30,9 +30,6 @@
   </description>
   <url type="homepage">https://fovapp.live</url>
   <url type="bugtracker">https://github.com/Flexible-Output-View/obs-studio-fov/issues</url>
-  <url type="donation">https://obsproject.com/contribute</url>
-  <url type="translate">https://crowdin.com/project/obs-studio</url>
-
   <recommends>
     <internet>always</internet>
     <control>pointing</control>
@@ -46,8 +43,8 @@
 
   <screenshots>
     <screenshot type="default">
-      <image>https://obsproject.com/assets/images/OBSDemoApp301Flathub.png</image>
-      <caption>The OBS Studio window showing a card game, the project website, a video, and a purple rectangle</caption>
+      <image>https://flexible-output-view.github.io/documentation-fov/fov-software-showcase.png</image>
+      <caption> Using FOV Software to stream a multi-track scene.</caption>
     </screenshot>
   </screenshots>
 
@@ -59,7 +56,7 @@
 
   <releases>
     <release version="@OBS_VERSION@" date="@APPDATA_RELEASE_DATE@">
-      <url type="details">https://github.com/obsproject/obs-studio/releases/tag/@OBS_VERSION@</url>
+      <url type="details">https://github.com/Flexible-Output-View/obs-studio-fov/releases/tag/@OBS_VERSION@</url>
     </release>
   </releases>
   <custom>

@@ -19,9 +19,11 @@
 
 #include "OBSBasic.hpp"
 #include "OBSProjector.hpp"
+#include "utility/FOVSystem.hpp"
 
 #include <dialogs/NameDialog.hpp>
 
+#include <iostream>
 #include <qt-wrappers.hpp>
 
 #include <QLineEdit>
@@ -102,8 +104,34 @@ OBSScene OBSBasic::GetCurrentScene()
 	return currentScene.load();
 }
 
+bool OBSBasic::FOVUIGuards(bool reset)
+{
+	if (!reset && checkIsFOV(GetService()) && StreamingActive() && !streamingStopping) {
+		ui->sourcesToolbar->setEnabled(false);
+		ui->sourcesFrame->setEnabled(false);
+		ui->scenesToolbar->setEnabled(false);
+		ui->scenesDock->setEnabled(false);
+		ui->sceneCollectionMenu->setEnabled(false);
+		ui->sceneListModeMenu->setEnabled(false);
+		ui->transitionsFrame->setEnabled(false);
+		return true;
+	}
+	ui->sourcesToolbar->setEnabled(true);
+	ui->sourcesFrame->setEnabled(true);
+	ui->scenesToolbar->setEnabled(true);
+	ui->scenesDock->setEnabled(true);
+	ui->sceneCollectionMenu->setEnabled(true);
+	ui->sceneListModeMenu->setEnabled(true);
+	ui->transitionsFrame->setEnabled(true);
+	return false;
+}
+
 void OBSBasic::AddScene(OBSSource source)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	const char *name = obs_source_get_name(source);
 	obs_scene_t *scene = obs_scene_from_source(source);
 
@@ -166,6 +194,10 @@ void OBSBasic::AddScene(OBSSource source)
 
 void OBSBasic::RemoveScene(OBSSource source)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	obs_scene_t *scene = obs_scene_from_source(source);
 
 	QListWidgetItem *sel = nullptr;
@@ -200,6 +232,7 @@ void OBSBasic::RemoveScene(OBSSource source)
 
 static bool select_one(obs_scene_t * /* scene */, obs_sceneitem_t *item, void *param)
 {
+
 	obs_sceneitem_t *selectedItem = static_cast<obs_sceneitem_t *>(param);
 	if (obs_sceneitem_is_group(item))
 		obs_sceneitem_group_enum_items(item, select_one, param);
@@ -211,6 +244,10 @@ static bool select_one(obs_scene_t * /* scene */, obs_sceneitem_t *item, void *p
 
 void OBSBasic::AddSceneItem(OBSSceneItem item)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	obs_scene_t *scene = obs_sceneitem_get_scene(item);
 
 	if (GetCurrentScene() == scene)
@@ -230,6 +267,10 @@ void OBSBasic::AddSceneItem(OBSSceneItem item)
 
 void OBSBasic::DuplicateSelectedScene()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSScene curScene = GetCurrentScene();
 
 	if (!curScene)
@@ -328,6 +369,10 @@ static inline void RemoveSceneAndReleaseNested(obs_source_t *source)
 
 void OBSBasic::RemoveSelectedScene()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSScene scene = GetCurrentScene();
 	obs_source_t *source = obs_scene_get_source(scene);
 
@@ -490,6 +535,10 @@ void OBSBasic::SceneItemAdded(void *data, calldata_t *params)
 
 void OBSBasic::on_scenes_currentItemChanged(QListWidgetItem *current, QListWidgetItem *)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSSource source;
 
 	if (current) {
@@ -513,6 +562,10 @@ void OBSBasic::on_scenes_currentItemChanged(QListWidgetItem *current, QListWidge
 
 void OBSBasic::EditSceneName()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	ui->scenesDock->removeAction(renameScene);
 	QListWidgetItem *item = ui->scenes->currentItem();
 	Qt::ItemFlags flags = item->flags();
@@ -524,6 +577,10 @@ void OBSBasic::EditSceneName()
 
 void OBSBasic::on_scenes_customContextMenuRequested(const QPoint &pos)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	QListWidgetItem *item = ui->scenes->itemAt(pos);
 
 	QMenu popup(this);
@@ -639,6 +696,10 @@ void OBSBasic::GridActionClicked()
 
 void OBSBasic::on_actionAddScene_triggered()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	string name;
 	QString format{QTStr("Basic.Main.DefaultSceneName.Text")};
 
@@ -690,11 +751,20 @@ void OBSBasic::on_actionAddScene_triggered()
 
 void OBSBasic::on_actionRemoveScene_triggered()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
+
 	RemoveSelectedScene();
 }
 
 void OBSBasic::ChangeSceneIndex(bool relative, int offset, int invalidIdx)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	int idx = ui->scenes->currentRow();
 	if (idx == -1 || idx == invalidIdx)
 		return;
@@ -787,6 +857,10 @@ static bool add_source_enum(obs_scene_t *, obs_sceneitem_t *item, void *p)
 
 void OBSBasic::CreateSceneUndoRedoAction(const QString &action_name, OBSData undo_data, OBSData redo_data)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	auto undo_redo = [this](const std::string &json) {
 		OBSDataAutoRelease base = obs_data_create_from_json(json.c_str());
 		OBSDataArrayAutoRelease array = obs_data_get_array(base, "array");
@@ -832,6 +906,10 @@ void OBSBasic::CreateSceneUndoRedoAction(const QString &action_name, OBSData und
 
 void OBSBasic::MoveSceneItem(enum obs_order_movement movement, const QString &action_name)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSSceneItem item = GetCurrentSceneItem();
 	obs_source_t *source = obs_sceneitem_get_source(item);
 
@@ -892,6 +970,10 @@ static void RenameListItem(OBSBasic *parent, QListWidget *listWidget, obs_source
 
 void OBSBasic::SceneNameEdited(QWidget *editor)
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSScene scene = GetCurrentScene();
 	QLineEdit *edit = qobject_cast<QLineEdit *>(editor);
 	string text = QT_TO_UTF8(edit->text().trimmed());
@@ -909,6 +991,10 @@ void OBSBasic::SceneNameEdited(QWidget *editor)
 
 void OBSBasic::OpenSceneFilters()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	OBSScene scene = GetCurrentScene();
 	OBSSource source = obs_scene_get_source(scene);
 

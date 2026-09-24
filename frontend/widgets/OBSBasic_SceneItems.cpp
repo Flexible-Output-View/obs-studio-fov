@@ -875,6 +875,10 @@ void OBSBasic::AddSourcePopupMenu(const QPoint &pos)
 
 void OBSBasic::on_actionAddSource_triggered()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	AddSourcePopupMenu(QCursor::pos());
 }
 
@@ -892,6 +896,10 @@ static bool remove_items(obs_scene_t *, obs_sceneitem_t *item, void *param)
 
 void OBSBasic::on_actionRemoveSource_triggered()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
+
 	vector<OBSSceneItem> items;
 	OBSScene scene = GetCurrentScene();
 	obs_source_t *scene_source = obs_scene_get_source(scene);
