@@ -15,6 +15,9 @@
 
 #include <QUuid>
 
+/**
+ * @brief Disable and enable specific UI elemnts to match the supported feature set of FOV.
+ */
 void OBSBasicSettings::updateFOVSpecificUI()
 {
 	bool isFOV = IsFOV();
@@ -44,6 +47,12 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->advOutUseRescale->hide();
 		ui->advOutUseRescale->blockSignals(true);
 		ui->advOutUseRescale->setEnabled(false);
+
+		ui->downscaleFilter->hide();
+		ui->label_11->hide();
+		ui->outputResLabel->hide();
+		ui->outputResolution->hide();
+		ui->scaledAspect->hide();
 	} else {
 		ui->simpleOutputVTrackSelect->hide();
 		ui->simpleOutputATrackSelect->hide();
@@ -69,6 +78,12 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->advOutUseRescale->show();
 		ui->advOutUseRescale->blockSignals(false);
 		ui->advOutUseRescale->setEnabled(true);
+
+		ui->downscaleFilter->show();
+		ui->label_11->show();
+		ui->outputResLabel->show();
+		ui->outputResolution->show();
+		ui->scaledAspect->show();
 	}
 }
 
