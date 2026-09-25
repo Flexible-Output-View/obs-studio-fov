@@ -3892,6 +3892,7 @@ void OBSBasicSettings::on_advOutEncoder_currentIndexChanged()
 
 	ui->advOutUseRescale->setVisible(true);
 	ui->advOutRescale->setVisible(true);
+	updateFOVSpecificUI();
 }
 
 void OBSBasicSettings::on_advOutRecEncoder_currentIndexChanged(int idx)

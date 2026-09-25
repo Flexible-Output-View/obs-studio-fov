@@ -15,6 +15,63 @@
 
 #include <QUuid>
 
+void OBSBasicSettings::updateFOVSpecificUI()
+{
+	bool isFOV = IsFOV();
+
+	if (isFOV) {
+		ui->simpleOutputVTrackSelect->show();
+		ui->simpleOutputATrackSelect->show();
+		ui->advOutVTrackSelect->show();
+		ui->advOutTrack1Name->setEnabled(false);
+		ui->advOutTrack2Name->setEnabled(false);
+		ui->advOutTrack3Name->setEnabled(false);
+		ui->advOutTrack4Name->setEnabled(false);
+		ui->advOutTrack5Name->setEnabled(false);
+		ui->advOutTrack6Name->setEnabled(false);
+
+		ui->advStreamTrackWidget->hide();
+		ui->advStreamTrackWidgetLabel->hide();
+
+		ui->advOutRescale->hide();
+		ui->advOutRescale->blockSignals(true);
+		ui->advOutRescale->setDisabled(true);
+
+		ui->advOutRescaleFilter->hide();
+		ui->advOutRescaleFilter->blockSignals(true);
+		ui->advOutRescaleFilter->setEnabled(false);
+
+		ui->advOutUseRescale->hide();
+		ui->advOutUseRescale->blockSignals(true);
+		ui->advOutUseRescale->setEnabled(false);
+	} else {
+		ui->simpleOutputVTrackSelect->hide();
+		ui->simpleOutputATrackSelect->hide();
+		ui->advOutVTrackSelect->hide();
+		ui->advOutTrack1Name->setEnabled(true);
+		ui->advOutTrack2Name->setEnabled(true);
+		ui->advOutTrack3Name->setEnabled(true);
+		ui->advOutTrack4Name->setEnabled(true);
+		ui->advOutTrack5Name->setEnabled(true);
+		ui->advOutTrack6Name->setEnabled(true);
+
+		ui->advStreamTrackWidget->show();
+		ui->advStreamTrackWidgetLabel->show();
+
+		ui->advOutRescale->show();
+		ui->advOutRescale->blockSignals(false);
+		ui->advOutRescale->setDisabled(false);
+
+		ui->advOutRescaleFilter->show();
+		ui->advOutRescaleFilter->blockSignals(false);
+		ui->advOutRescaleFilter->setEnabled(true);
+
+		ui->advOutUseRescale->show();
+		ui->advOutUseRescale->blockSignals(false);
+		ui->advOutUseRescale->setEnabled(true);
+	}
+}
+
 static const QUuid &CustomServerUUID()
 {
 	static const QUuid uuid = QUuid::fromString(QT_UTF8("{241da255-70f2-4bbb-bef7-509695bf8e65}"));
@@ -242,6 +299,8 @@ void OBSBasicSettings::LoadStream1Settings()
 	loading = false;
 
 	QMetaObject::invokeMethod(this, "UpdateResFPSLimits", Qt::QueuedConnection);
+	updateFOVSpecificUI();
+
 }
 
 #define SRT_PROTOCOL "srt"
@@ -327,6 +386,8 @@ void OBSBasicSettings::SaveStream1Settings()
 	} else {
 		obs_data_set_string(settings, "key", QT_TO_UTF8(ui->key->text()));
 	}
+
+	updateFOVSpecificUI();
 
 	OBSServiceAutoRelease newService = obs_service_create(service_id, "default_service", settings, hotkeyData);
 
@@ -630,6 +691,9 @@ void OBSBasicSettings::ServiceChanged(bool resetFields)
 	bool custom = IsCustomService();
 	bool whip = IsWHIP();
 	bool isFOV = IsFOV();
+
+	updateFOVSpecificUI();
+
 
 	ui->disconnectAccount->setVisible(false);
 	ui->bandwidthTestEnable->setVisible(false);

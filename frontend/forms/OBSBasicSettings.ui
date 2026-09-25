@@ -146,7 +146,7 @@
      <item>
       <widget class="QStackedWidget" name="settingsPages">
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="generalPage">
         <layout class="QVBoxLayout" name="verticalLayout_18">
@@ -181,7 +181,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>706</width>
+              <width>758</width>
               <height>1513</height>
              </rect>
             </property>
@@ -2335,7 +2335,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>758</width>
+                     <width>676</width>
                      <height>908</height>
                     </rect>
                    </property>
@@ -3548,8 +3548,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>768</width>
-                             <height>518</height>
+                             <width>677</width>
+                             <height>447</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -4739,7 +4739,7 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>754</width>
+                            <width>312</width>
                             <height>630</height>
                            </rect>
                           </property>
@@ -6801,7 +6801,7 @@
               <x>0</x>
               <y>0</y>
               <width>245</width>
-              <height>19</height>
+              <height>28</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -6894,7 +6894,7 @@
               <x>0</x>
               <y>0</y>
               <width>939</width>
-              <height>389</height>
+              <height>663</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_42">

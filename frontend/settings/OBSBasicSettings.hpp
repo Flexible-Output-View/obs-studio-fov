@@ -135,6 +135,8 @@ private:
 	void SaveFormat(QComboBox *combo);
 	void SaveEncoder(QComboBox *combo, const char *section, const char *value);
 
+	void updateFOVSpecificUI();
+
 	bool ResFPSValid(obs_service_resolution *res_list, size_t res_count, int max_fps);
 
 	// TODO: Remove, orphaned method
