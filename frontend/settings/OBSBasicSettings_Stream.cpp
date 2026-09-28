@@ -1,6 +1,10 @@
 #include "OBSBasicSettings.hpp"
+#include "obs-source.h"
 #include "obs.h"
+#include "obs.hpp"
 #include <qcontainerfwd.h>
+#include <qobject.h>
+#include <vector>
 
 #ifdef YOUTUBE_ENABLED
 #include <docks/YouTubeAppDock.hpp>
@@ -14,6 +18,34 @@
 #include <qt-wrappers.hpp>
 
 #include <QUuid>
+
+static std::vector<OBSSource> getFOVSources()
+{
+	std::vector<OBSSource> enumeratedSources;
+	obs_enum_sources(
+		[](void *data, obs_source_t *source) {
+			auto *vec = static_cast<std::vector<OBSSource> *>(data);
+			if (source && obs_source_get_ref(source)) {
+				vec->emplace_back(source);
+			}
+			return true;
+		},
+		&enumeratedSources);
+	return enumeratedSources;
+}
+
+static std::vector<OBSSource> filterSources(std::vector<OBSSource> &sources, uint32_t flag)
+{
+	std::vector<OBSSource> result;
+
+	for (const auto &src : sources) {
+		uint32_t flags = obs_source_get_output_flags(src);
+		if (flags & flag) {
+			result.emplace_back(src);
+		}
+	}
+	return result;
+}
 
 /**
  * @brief Disable and enable specific UI elemnts to match the supported feature set of FOV.
@@ -53,6 +85,32 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->outputResLabel->hide();
 		ui->outputResolution->hide();
 		ui->scaledAspect->hide();
+
+		if (main->outputHandler) {
+			// main->outputHandler->fov.syncSources();
+			auto sources = getFOVSources();
+			auto audioSources = filterSources(sources, OBS_SOURCE_AUDIO);
+			auto videoSources = filterSources(sources, OBS_SOURCE_VIDEO);
+
+			QStringList videoItemList;
+			videoItemList.append("All Tracks");
+			for (const auto &source : videoSources) {
+				videoItemList.append(obs_source_get_name(source));
+			}
+			QStringList audioItemList;
+			audioItemList.append("All Tracks");
+			for (const auto &source : audioSources) {
+				audioItemList.append(obs_source_get_name(source));
+			}
+			
+			ui->simpleOutputVTrackSelect->clear();
+			ui->simpleOutputATrackSelect->clear();
+			ui->advOutVTrackSelect->clear();
+			ui->simpleOutputVTrackSelect->addItems(videoItemList);
+			ui->simpleOutputATrackSelect->addItems(audioItemList);
+			ui->advOutVTrackSelect->addItems(videoItemList);
+		}
+
 	} else {
 		ui->simpleOutputVTrackSelect->hide();
 		ui->simpleOutputATrackSelect->hide();

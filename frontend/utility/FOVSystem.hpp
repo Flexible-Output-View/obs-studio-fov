@@ -99,6 +99,18 @@ public:
 	 */
 	void syncSources();
 
+	/**
+	 * @brief Returns a vector contaning all audio sources tracked by FOVSystem
+	 * @return std::vector<OBSSource> vector contaning all audio sources
+	 */
+	std::vector<OBSSource> getTrackedAudioSources();
+
+	/**
+	 * @brief Returns a vector contaning all video sources tracked by FOVSystem
+	 * @return std::vector<OBSSource> vector contaning all video sources
+	 */
+	std::vector<OBSSource> getTrackedVideoSources();
+
 protected:
 	/**
 	 * @struct VideoTrack

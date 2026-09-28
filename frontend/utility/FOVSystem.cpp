@@ -677,3 +677,33 @@ void FOVSystem::syncSources()
 		}
 	}
 }
+
+/**
+ * @brief Returns a vector contaning all audio sources tracked by FOVSystem
+ * @return std::vector<OBSSource> vector contaning all audio sources
+ */
+std::vector<OBSSource> FOVSystem::getTrackedAudioSources()
+{
+	std::vector<OBSSource> sources;
+
+	sources.reserve(audioTracks.size());
+	for (const auto &track : audioTracks) {
+		sources.emplace_back(track->source);
+	}
+	return sources;
+}
+
+/**
+ * @brief Returns a vector contaning all video sources tracked by FOVSystem
+ * @return std::vector<OBSSource> vector contaning all video sources
+ */
+std::vector<OBSSource> FOVSystem::getTrackedVideoSources()
+{
+	std::vector<OBSSource> sources;
+
+	sources.reserve(videoTracks.size());
+	for (const auto &track : videoTracks) {
+		sources.emplace_back(track->source);
+	}
+	return sources;
+}

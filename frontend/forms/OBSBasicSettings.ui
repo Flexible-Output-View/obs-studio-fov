@@ -2300,7 +2300,7 @@
             <item>
              <widget class="QStackedWidget" name="outputModePages">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="easyOutputsPage">
                <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -2335,7 +2335,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>676</width>
+                     <width>758</width>
                      <height>908</height>
                     </rect>
                    </property>
@@ -3126,8 +3126,8 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>768</width>
-                         <height>557</height>
+                         <width>520</width>
+                         <height>270</height>
                         </rect>
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -6894,7 +6894,7 @@
               <x>0</x>
               <y>0</y>
               <width>939</width>
-              <height>663</height>
+              <height>389</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_42">
