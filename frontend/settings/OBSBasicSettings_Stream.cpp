@@ -19,34 +19,6 @@
 
 #include <QUuid>
 
-static std::vector<OBSSource> getFOVSources()
-{
-	std::vector<OBSSource> enumeratedSources;
-	obs_enum_sources(
-		[](void *data, obs_source_t *source) {
-			auto *vec = static_cast<std::vector<OBSSource> *>(data);
-			if (source && obs_source_get_ref(source)) {
-				vec->emplace_back(source);
-			}
-			return true;
-		},
-		&enumeratedSources);
-	return enumeratedSources;
-}
-
-static std::vector<OBSSource> filterSources(std::vector<OBSSource> &sources, uint32_t flag)
-{
-	std::vector<OBSSource> result;
-
-	for (const auto &src : sources) {
-		uint32_t flags = obs_source_get_output_flags(src);
-		if (flags & flag) {
-			result.emplace_back(src);
-		}
-	}
-	return result;
-}
-
 /**
  * @brief Disable and enable specific UI elemnts to match the supported feature set of FOV.
  */
@@ -55,8 +27,6 @@ void OBSBasicSettings::updateFOVSpecificUI()
 	bool isFOV = IsFOV();
 
 	if (isFOV) {
-		ui->simpleOutputVTrackSelect->show();
-		ui->simpleOutputATrackSelect->show();
 		ui->advOutVTrackSelect->show();
 		ui->advOutTrack1Name->setEnabled(false);
 		ui->advOutTrack2Name->setEnabled(false);
@@ -87,33 +57,46 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->scaledAspect->hide();
 
 		if (main->outputHandler) {
-			// main->outputHandler->fov.syncSources();
-			auto sources = getFOVSources();
-			auto audioSources = filterSources(sources, OBS_SOURCE_AUDIO);
-			auto videoSources = filterSources(sources, OBS_SOURCE_VIDEO);
+			auto sources = main->outputHandler->fov.getOBSSources();
+			auto audioSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_AUDIO, true);
+			auto videoSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_VIDEO, true);
 
 			QStringList videoItemList;
 			videoItemList.append("All Tracks");
 			for (const auto &source : videoSources) {
 				videoItemList.append(obs_source_get_name(source));
 			}
-			QStringList audioItemList;
-			audioItemList.append("All Tracks");
-			for (const auto &source : audioSources) {
-				audioItemList.append(obs_source_get_name(source));
-			}
-			
-			ui->simpleOutputVTrackSelect->clear();
-			ui->simpleOutputATrackSelect->clear();
+
 			ui->advOutVTrackSelect->clear();
-			ui->simpleOutputVTrackSelect->addItems(videoItemList);
-			ui->simpleOutputATrackSelect->addItems(audioItemList);
 			ui->advOutVTrackSelect->addItems(videoItemList);
+
+			ui->advOutTrack1Name->clear();
+			if (audioSources.size() >= 1 && audioSources.at(0)) {
+				ui->advOutTrack1Name->setText(QString(obs_source_get_name(audioSources[0])));
+			}
+			ui->advOutTrack2Name->clear();
+			if (audioSources.size() >= 2 && audioSources.at(1)) {
+				ui->advOutTrack2Name->setText(QString(obs_source_get_name(audioSources[1])));
+			}
+			ui->advOutTrack3Name->clear();
+			if (audioSources.size() >= 3 && audioSources.at(2)) {
+				ui->advOutTrack3Name->setText(QString(obs_source_get_name(audioSources[2])));
+			}
+			ui->advOutTrack4Name->clear();
+			if (audioSources.size() >= 4 && audioSources.at(3)) {
+				ui->advOutTrack4Name->setText(QString(obs_source_get_name(audioSources[3])));
+			}
+			ui->advOutTrack5Name->clear();
+			if (audioSources.size() >= 5 && audioSources.at(4)) {
+				ui->advOutTrack5Name->setText(QString(obs_source_get_name(audioSources[4])));
+			}
+			ui->advOutTrack6Name->clear();
+			if (audioSources.size() >= 6 && audioSources.at(5)) {
+				ui->advOutTrack6Name->setText(QString(obs_source_get_name(audioSources[5])));
+			}
 		}
 
 	} else {
-		ui->simpleOutputVTrackSelect->hide();
-		ui->simpleOutputATrackSelect->hide();
 		ui->advOutVTrackSelect->hide();
 		ui->advOutTrack1Name->setEnabled(true);
 		ui->advOutTrack2Name->setEnabled(true);
@@ -180,7 +163,7 @@ inline bool OBSBasicSettings::IsWHIP() const
 	return ui->service->currentData().toInt() == (int)ListOpt::WHIP;
 }
 
-inline bool OBSBasicSettings::IsFOV() const
+bool OBSBasicSettings::IsFOV() const
 {
 	return ui->service->currentData().toInt() == (int)ListOpt::FOV;
 }
@@ -373,7 +356,6 @@ void OBSBasicSettings::LoadStream1Settings()
 
 	QMetaObject::invokeMethod(this, "UpdateResFPSLimits", Qt::QueuedConnection);
 	updateFOVSpecificUI();
-
 }
 
 #define SRT_PROTOCOL "srt"
@@ -766,7 +748,6 @@ void OBSBasicSettings::ServiceChanged(bool resetFields)
 	bool isFOV = IsFOV();
 
 	updateFOVSpecificUI();
-
 
 	ui->disconnectAccount->setVisible(false);
 	ui->bandwidthTestEnable->setVisible(false);

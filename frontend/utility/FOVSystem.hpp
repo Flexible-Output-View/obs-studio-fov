@@ -111,6 +111,14 @@ public:
 	 */
 	std::vector<OBSSource> getTrackedVideoSources();
 
+
+	std::vector<OBSSource> getOBSSources();
+	std::vector<OBSSource> filterSources(std::vector<OBSSource> &sources, uint32_t flag, bool onlyEnabled = false);
+
+
+	void updateEncoderSettingsBySource(obs_data_t *encoderSettings, const std::string &encoderID, obs_source_t *source);
+
+
 protected:
 	/**
 	 * @struct VideoTrack
@@ -276,7 +284,7 @@ private:
 	 * @param[in] source Pointer to the OBS source.
 	 * @return true True if source was found and removed, false otherwise.
 	 */
-	bool removeSourceInternal(obs_source_t *source);
+	bool removeSourceInternal(const obs_source_t *source);
 
 	/**
 	 * @brief Internal non-locking implementation to clear all sources and tracks.

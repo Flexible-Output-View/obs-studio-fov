@@ -304,16 +304,11 @@ FOVSystem::AudioTrack::AudioTrack(obs_source_t *rawSource, obs_data_t *audioSett
 	std::string encoderName = "FOV audio track " + std::string(srcName ? srcName : "unknown");
 
 	size_t mixerIndex = 0;
-	if (registeredMixes <= -1) {
-		auto mixerMask = rawSource ? obs_source_get_audio_mixers(rawSource) : 0;
-		mixerIndex = GetFirstMixerIndex(mixerMask);
-	} else {
-		int clampedMix = (registeredMixes >= 0 && registeredMixes < 6) ? registeredMixes : 0;
-		if (rawSource) {
-			obs_source_set_audio_mixers(rawSource, 1 << clampedMix);
-		}
-		mixerIndex = static_cast<size_t>(clampedMix);
+	int clampedMix = (registeredMixes >= 0 && registeredMixes < 6) ? registeredMixes : 0;
+	if (rawSource) {
+		obs_source_set_audio_mixers(rawSource, 1 << clampedMix);
 	}
+	mixerIndex = static_cast<size_t>(clampedMix);
 
 	encoder = obs_audio_encoder_create(encoderID.c_str(), encoderName.c_str(), audioSettings, mixerIndex, nullptr);
 	setSource(rawSource);
@@ -423,7 +418,7 @@ bool FOVSystem::removeSource(obs_source_t *source)
  * @param[in] source Pointer to the OBS source.
  * @return true True if found and removed, false otherwise.
  */
-bool FOVSystem::removeSourceInternal(obs_source_t *source)
+bool FOVSystem::removeSourceInternal(const obs_source_t *source)
 {
 	if (!isInit || source == nullptr)
 		return false;
@@ -507,6 +502,37 @@ void FOVSystem::updateVideoEncoderSettings(obs_data_t *encoderSettings, const st
 	}
 
 	updateEncoderGroupInternal();
+}
+
+void FOVSystem::updateEncoderSettingsBySource(obs_data_t *encoderSettings, const std::string &encoderID,
+					      obs_source_t *source)
+{
+	std::lock_guard<std::mutex> lock(systemMutex);
+
+	if (!source || !encoderSettings)
+		return;
+
+	if (obs_source_get_flags(source) & OBS_SOURCE_VIDEO) {
+		for (auto &i : videoTracks) {
+			if (strcmp(obs_source_get_uuid(i->source), obs_source_get_uuid(source)) == 0) {
+				if (encoderID != this->videoEncoderID) {
+					i->changeEncoderType(encoderID);
+				}
+				i->updateEncoderSettings(encoderSettings);
+				i->refreshVideoSettings();
+			}
+		}
+	} else if (obs_source_get_flags(source) & OBS_SOURCE_AUDIO) {
+		for (auto &i : audioTracks) {
+			if (strcmp(obs_source_get_uuid(i->source), obs_source_get_uuid(source)) == 0) {
+				if (encoderID != this->audioEncoderID) {
+					i->changeEncoderType(encoderID);
+				}
+				i->updateEncoderSettings(encoderSettings);
+				i->refreshAudioSettings();
+			}
+		}
+	}
 }
 
 /**
@@ -633,6 +659,41 @@ void FOVSystem::updateServiceTracksInternal()
 	obs_service_update(service, data);
 }
 
+std::vector<OBSSource> FOVSystem::getOBSSources()
+{
+	std::vector<OBSSource> enumeratedSources;
+	obs_enum_sources(
+		[](void *data, obs_source_t *source) {
+			auto *vec = static_cast<std::vector<OBSSource> *>(data);
+			if (source && obs_source_get_ref(source)) {
+				vec->emplace_back(source);
+			}
+			return true;
+		},
+		&enumeratedSources);
+	return enumeratedSources;
+}
+
+std::vector<OBSSource> FOVSystem::filterSources(std::vector<OBSSource> &sources, uint32_t flag, bool onlyEnabled)
+{
+	std::vector<OBSSource> result;
+
+	for (auto &src : sources) {
+		uint32_t srcFlags = obs_source_get_output_flags(src);
+		if (srcFlags & flag) {
+			if (onlyEnabled) {
+				if (((srcFlags & OBS_SOURCE_VIDEO) && (obs_source_showing(src) && obs_source_active(src) && !obs_source_is_hidden(src)))
+					|| ((srcFlags & OBS_SOURCE_AUDIO) && (obs_source_active(src)))) {
+					result.emplace_back(src);
+				}
+			} else {
+				result.emplace_back(src);
+			}
+		}
+	}
+	return result;
+}
+
 /**
  * @brief Synchronize active sources by scanning all available OBS audio and video sources.
  */
@@ -644,16 +705,7 @@ void FOVSystem::syncSources()
 
 	clearSourcesInternal();
 
-	std::vector<OBSSourceAutoRelease> enumeratedSources;
-	obs_enum_sources(
-		[](void *data, obs_source_t *source) {
-			auto *vec = static_cast<std::vector<OBSSourceAutoRelease> *>(data);
-			if (source && obs_source_get_ref(source)) {
-				vec->emplace_back(source);
-			}
-			return true;
-		},
-		&enumeratedSources);
+	std::vector<OBSSource> enumeratedSources = getOBSSources();
 
 	for (const auto &source : enumeratedSources) {
 		if (!source)

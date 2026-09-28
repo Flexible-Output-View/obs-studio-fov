@@ -2150,12 +2150,16 @@ void OBSBasicSettings::LoadAdvOutputAudioSettings()
 	SetComboByName(ui->advOutTrack5Bitrate, std::to_string(track5Bitrate).c_str());
 	SetComboByName(ui->advOutTrack6Bitrate, std::to_string(track6Bitrate).c_str());
 
-	ui->advOutTrack1Name->setText(name1);
-	ui->advOutTrack2Name->setText(name2);
-	ui->advOutTrack3Name->setText(name3);
-	ui->advOutTrack4Name->setText(name4);
-	ui->advOutTrack5Name->setText(name5);
-	ui->advOutTrack6Name->setText(name6);
+	if (IsFOV()) {
+		updateFOVSpecificUI();
+	} else {
+		ui->advOutTrack1Name->setText(name1);
+		ui->advOutTrack2Name->setText(name2);
+		ui->advOutTrack3Name->setText(name3);
+		ui->advOutTrack4Name->setText(name4);
+		ui->advOutTrack5Name->setText(name5);
+		ui->advOutTrack6Name->setText(name6);
+	}
 }
 
 void OBSBasicSettings::LoadOutputSettings()
@@ -3681,6 +3685,7 @@ void OBSBasicSettings::SaveSettings()
 		restart = true;
 	else
 		restart = false;
+	updateFOVSpecificUI();
 }
 
 bool OBSBasicSettings::QueryChanges()
