@@ -81,17 +81,21 @@ public:
 	 * @brief Update settings and type for all active video encoders.
 	 * @param[in] encoderSettings Pointer to the settings data object.
 	 * @param[in] encoderID Identifier string of the OBS encoder.
+	 * @param[in] idx Which track index should be updated, default is -1 = the settings will be applied to all tracks
 	 * @note Thread-safe. Acquires systemMutex internally.
 	 */
-	void updateVideoEncoderSettings(obs_data_t *encoderSettings, const std::string &encoderID = "obs_x264");
+	void updateVideoEncoderSettings(obs_data_t *encoderSettings, const std::string &encoderID = "obs_x264",
+					int idx = -1);
 
 	/**
 	 * @brief Update settings and type for all active audio encoders.
 	 * @param[in] encoderSettings Pointer to the settings data object.
 	 * @param[in] encoderID Identifier string of the OBS encoder.
+	 * @param[in] idx Which track index should be updated, default is -1 = the settings will be applied to all tracks
 	 * @note Thread-safe. Acquires systemMutex internally.
 	 */
-	void updateAudioEncoderSettings(obs_data_t *encoderSettings, const std::string &encoderID = "ffmpeg_aac");
+	void updateAudioEncoderSettings(obs_data_t *encoderSettings, const std::string &encoderID = "ffmpeg_aac",
+					int idx = -1);
 
 	/**
 	 * @brief Synchronize active sources by scanning all available OBS audio and video sources.
@@ -111,13 +115,11 @@ public:
 	 */
 	std::vector<OBSSource> getTrackedVideoSources();
 
-
 	std::vector<OBSSource> getOBSSources();
 	std::vector<OBSSource> filterSources(std::vector<OBSSource> &sources, uint32_t flag, bool onlyEnabled = false);
 
-
-	void updateEncoderSettingsBySource(obs_data_t *encoderSettings, const std::string &encoderID, obs_source_t *source);
-
+	void updateEncoderSettingsBySource(obs_data_t *encoderSettings, const std::string &encoderID,
+					   obs_source_t *source);
 
 protected:
 	/**
@@ -125,13 +127,11 @@ protected:
 	 * @brief Manages a video track and its dedicated rendering context for the FOV System.
 	 */
 	struct VideoTrack {
-		std::string encoderID;              /**< Identifier string of the OBS encoder. */
-		video_t *videoContext = nullptr;    /**< Pointer to the internal video render context. */
-		OBSSource source;                   /**< OBS source wrapper. */
-		OBSView view;                       /**< Internal OBS view object wrapper. */
-		OBSEncoderAutoRelease encoder;      /**< Instantiated video encoder object wrapper. */
-		OBSDataAutoRelease encoderSettings; /**< Local encoder settings data object wrapper. */
-		struct obs_video_info ovi{0};       /**< OBS Video Info structure. */
+		video_t *videoContext = nullptr; /**< Pointer to the internal video render context. */
+		OBSSource source;                /**< OBS source wrapper. */
+		OBSView view;                    /**< Internal OBS view object wrapper. */
+		OBSEncoderAutoRelease encoder;   /**< Instantiated video encoder object wrapper. */
+		struct obs_video_info ovi{0};    /**< OBS Video Info structure. */
 
 		/**
 		 * @brief Construct a new VideoTrack object.
@@ -139,7 +139,7 @@ protected:
 		 * @param[in] videoSettings Pointer to the settings data object.
 		 * @param[in] encoderID Identifier string of the OBS encoder.
 		 */
-		VideoTrack(obs_source_t *rawSource, obs_data_t *videoSettings, std::string encoderID);
+		VideoTrack(obs_source_t *rawSource, obs_data_t *videoSettings, const std::string &encoderID);
 
 		/**
 		 * @brief Destroy the VideoTrack object and cleanup resources.
@@ -155,25 +155,30 @@ protected:
 		/**
 		 * @brief Set the underlying OBS source for this video track.
 		 * @param[in] source Pointer to the OBS source. Pass nullptr to unbind and clear the track.
+		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] videoSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if source is null, or if refreshVideoSettings fails during execution.
 		 */
-		bool setSource(obs_source_t *source);
+		bool setSource(obs_source_t *source, const std::string &encoderID, obs_data_t *videoSettings);
 
 		/**
 		 * @brief Recreate the video context and view matching the current source properties.
+		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] videoSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if this->source is null, or if obs_view_add2 fails to allocate the video context.
 		 */
-		bool refreshVideoSettings();
+		bool refreshVideoSettings(const std::string &encoderID, obs_data_t *videoSettings);
 
 		/**
 		 * @brief Change the encoder type used for this video track.
 		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] videoSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if encoderID matches current type, or if obs_video_encoder_create fails.
 		 */
-		bool changeEncoderType(const std::string &encoderID);
+		bool changeEncoderType(const std::string &encoderID, obs_data_t *videoSettings);
 	};
 
 	/**
@@ -181,10 +186,8 @@ protected:
 	 * @brief Manages an independent audio processing pipeline and encoder.
 	 */
 	struct AudioTrack {
-		std::string encoderID;              /**< Identifier string of the OBS encoder. */
-		OBSSource source;                   /**< OBS source wrapper. */
-		OBSEncoderAutoRelease encoder;      /**< Instantiated audio encoder object wrapper. */
-		OBSDataAutoRelease encoderSettings; /**< Local encoder settings data object wrapper. */
+		OBSSource source;              /**< OBS source wrapper. */
+		OBSEncoderAutoRelease encoder; /**< Instantiated audio encoder object wrapper. */
 
 		/**
 		 * @brief Construct a new AudioTrack object.
@@ -193,7 +196,7 @@ protected:
 		 * @param[in] encoderID Identifier string of the OBS encoder.
 		 * @param[in] registeredMixes Count of already registered audio mixes. Used to assign the mixer ID bitmask.
 		 */
-		AudioTrack(obs_source_t *rawSource, obs_data_t *audioSettings, std::string encoderID,
+		AudioTrack(obs_source_t *rawSource, obs_data_t *audioSettings, const std::string &encoderID,
 			   int registeredMixes = -1);
 
 		/**
@@ -210,25 +213,30 @@ protected:
 		/**
 		 * @brief Set the underlying OBS source for this audio track.
 		 * @param[in] source Pointer to the OBS source. Pass nullptr to unbind and clear the track.
+		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] audioSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if source is null.
 		 */
-		bool setSource(obs_source_t *source);
+		bool setSource(obs_source_t *source, const std::string &encoderID, obs_data_t *audioSettings);
 
 		/**
 		 * @brief Recreate the audio encoder matching the current source properties.
+		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] audioSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if this->source is null.
 		 */
-		bool refreshAudioSettings();
+		bool refreshAudioSettings(const std::string &encoderID, obs_data_t *audioSettings);
 
 		/**
 		 * @brief Change the encoder type used for this audio track.
 		 * @param[in] encoderID Identifier string of the OBS encoder.
+		 * @param[in] audioSettings Pointer to the settings data object.
 		 * @return true True on success.
 		 * @return false False if encoderID matches the current type, or if obs_audio_encoder_create fails.
 		 */
-		bool changeEncoderType(const std::string &encoderID);
+		bool changeEncoderType(const std::string &encoderID, obs_data_t *audioSettings);
 
 		/**
 		 * @brief Get the index of the first active mixer track from a mixer mask.
@@ -257,11 +265,21 @@ private:
 	OBSDataAutoRelease videoSettings; /**< Default video settings data object wrapper. */
 	OBSDataAutoRelease audioSettings; /**< Default audio settings data object wrapper. */
 
+	std::vector<OBSDataAutoRelease> videoTrackSettings;
+	std::vector<std::string> videoTrackEncoderIDs;
+	std::vector<OBSDataAutoRelease> audioTrackSettings;
+	std::vector<std::string> audioTrackEncoderIDs;
+
 	OBSEncoderGroup encoderGroup; /**< Wrapper containing the shared encoder group object. */
 	std::deque<std::unique_ptr<VideoTrack>>
 		videoTracks; /**< Deque storing unique pointers to active VideoTrack objects. */
 	std::deque<std::unique_ptr<AudioTrack>>
 		audioTracks; /**< Deque storing unique pointers to active AudioTrack objects. */
+
+	obs_data_t *getVideoSettings(size_t idx);
+	std::string getVideoEncoderID(size_t idx);
+	obs_data_t *getAudioSettings(size_t idx);
+	std::string getAudioEncoderID(size_t idx);
 
 	/**
 	 * @brief Internal non-locking implementation to update track counts in active service settings.
