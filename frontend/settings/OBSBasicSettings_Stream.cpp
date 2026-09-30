@@ -56,6 +56,8 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->outputResolution->hide();
 		ui->scaledAspect->hide();
 
+		ui->advOutputReplayTab->setEnabled(false);
+
 		if (main->outputHandler) {
 			auto sources = main->outputHandler->fov.getOBSSources();
 			auto audioSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_AUDIO, true);
@@ -125,6 +127,8 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->outputResLabel->show();
 		ui->outputResolution->show();
 		ui->scaledAspect->show();
+
+		ui->advOutputReplayTab->setEnabled(true);
 	}
 }
 

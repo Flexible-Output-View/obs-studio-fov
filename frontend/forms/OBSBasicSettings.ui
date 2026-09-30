@@ -945,7 +945,7 @@
               <x>0</x>
               <y>0</y>
               <width>1446</width>
-              <height>663</height>
+              <height>230</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_1337">
@@ -2300,7 +2300,7 @@
             <item>
              <widget class="QStackedWidget" name="outputModePages">
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="easyOutputsPage">
                <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -2335,8 +2335,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>758</width>
-                     <height>810</height>
+                     <width>676</width>
+                     <height>750</height>
                     </rect>
                    </property>
                    <property name="sizePolicy">
@@ -3058,7 +3058,7 @@
                 <item>
                  <widget class="QTabWidget" name="advOutTabs">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <property name="usesScrollButtons">
                    <bool>true</bool>
@@ -3471,7 +3471,7 @@
                     <item>
                      <widget class="QStackedWidget" name="stackedWidget">
                       <property name="currentIndex">
-                       <number>1</number>
+                       <number>0</number>
                       </property>
                       <widget class="QWidget" name="advOutRecStandard">
                        <property name="sizePolicy">
@@ -3521,8 +3521,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>677</width>
-                             <height>447</height>
+                             <width>768</width>
+                             <height>518</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -6774,7 +6774,7 @@
               <x>0</x>
               <y>0</y>
               <width>245</width>
-              <height>19</height>
+              <height>28</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -6867,7 +6867,7 @@
               <x>0</x>
               <y>0</y>
               <width>939</width>
-              <height>663</height>
+              <height>389</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_42">
