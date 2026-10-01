@@ -2,7 +2,7 @@
  * @file curl_wrapper.hpp
  * @author The FOV Team
  * @brief Header file for the SimpleCurlRequest class managing synchronous HTTP operations via libcurl.
- * @version 0.1
+ * @version 1.0
  * @date 2026-02-07
  */
 

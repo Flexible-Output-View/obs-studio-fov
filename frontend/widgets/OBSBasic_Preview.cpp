@@ -236,6 +236,9 @@ void OBSBasic::ResizePreview(uint32_t cx, uint32_t cy)
 
 void OBSBasic::on_preview_customContextMenuRequested()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
 	CreateSourcePopupMenu(GetTopSelectedSourceItem(), true);
 }
 
