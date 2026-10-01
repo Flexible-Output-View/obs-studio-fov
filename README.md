@@ -12,5 +12,15 @@ This repository contains a customized distribution of **OBS Studio**, specifical
 
 ---
 
+## 👥 Maintainers
+
+| Name | GitHub |
+|------|--------|
+| Raphael Scandella | [@RaphxelS](https://github.com/RaphxelS) |
+| Samy Nasset | [@Slymoz](https://github.com/Slymoz) |
+| Lucas Loustalot | [@LucasLoustalot](https://github.com/LucasLoustalot) |
+
+---
+
 > [!IMPORTANT]
 > To learn how to install, build from source, or contribute to this repository, please visit our [Official Documentation Hub](https://flexible-output-view.github.io/documentation-fov).
