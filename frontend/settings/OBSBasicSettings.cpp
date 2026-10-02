@@ -19,6 +19,10 @@
 #include "OBSBasicSettings.hpp"
 #include "OBSHotkeyLabel.hpp"
 #include "OBSHotkeyWidget.hpp"
+#include "media-io/audio-io.h"
+#include "obs-output.h"
+#include "util/config-file.h"
+#include "utility/AdvancedOutput.hpp"
 
 #include <components/Multiview.hpp>
 #include <components/OBSSourceLabel.hpp>
@@ -496,6 +500,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	HookWidget(ui->advReplayBuf,         CHECK_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advRBSecMax,          SCROLL_CHANGED, OUTPUTS_CHANGED);
 	HookWidget(ui->advRBMegsMax,         SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutVTrackSelect, COMBO_CHANGED, OUTPUTS_CHANGED);
 	HookWidget(ui->channelSetup,         COMBO_CHANGED,  AUDIO_RESTART);
 	HookWidget(ui->sampleRate,           COMBO_CHANGED,  AUDIO_RESTART);
 	HookWidget(ui->meterDecayRate,       COMBO_CHANGED,  AUDIO_CHANGED);
@@ -655,7 +660,8 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	ui->disableOSXVSync = nullptr;
 	ui->resetOSXVSync = nullptr;
 #endif
-
+	connect(ui->advOutVTrackSelect, &QComboBox::currentIndexChanged, this,
+		&OBSBasicSettings::updateFOVTrackEncoderSettings);
 	connect(ui->streamDelaySec, &QSpinBox::valueChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
 	connect(ui->outputMode, &QComboBox::currentIndexChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
 	connect(ui->simpleOutputVBitrate, &QSpinBox::valueChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
@@ -926,6 +932,11 @@ void OBSBasicSettings::SaveCombo(QComboBox *widget, const char *section, const c
 {
 	if (WidgetChanged(widget))
 		config_set_string(main->Config(), section, value, QT_TO_UTF8(widget->currentText()));
+}
+
+void OBSBasicSettings::SaveComboIndex(QComboBox *widget, const char *section, const char *value)
+{
+	config_set_int(main->Config(), section, value, widget->currentIndex());
 }
 
 void OBSBasicSettings::SaveComboData(QComboBox *widget, const char *section, const char *value)
@@ -1822,12 +1833,15 @@ void OBSBasicSettings::LoadAdvOutputStreamingSettings()
 	int rescaleFilter = config_get_int(main->Config(), "AdvOut", "RescaleFilter");
 	int trackIndex = config_get_int(main->Config(), "AdvOut", "TrackIndex");
 	int audioMixes = config_get_int(main->Config(), "AdvOut", "StreamMultiTrackAudioMixes");
+	int fovTrackSelect = config_get_int(main->Config(), "FOV", "VideoTrackSettingsSelect");
 	ui->advOutRescale->setEnabled(rescaleFilter != OBS_SCALE_DISABLE);
 	ui->advOutRescale->setCurrentText(rescaleRes);
 
 	int idx = ui->advOutRescaleFilter->findData(rescaleFilter);
 	if (idx != -1)
 		ui->advOutRescaleFilter->setCurrentIndex(idx);
+
+	ui->advOutVTrackSelect->setCurrentIndex(fovTrackSelect);
 
 	QStringList specList = QTStr("FilenameFormatting.completer").split(QRegularExpression("\n"));
 	QCompleter *specCompleter = new QCompleter(specList);
@@ -1903,7 +1917,23 @@ void OBSBasicSettings::LoadAdvOutputStreamingEncoderProperties()
 	const char *type = config_get_string(main->Config(), "AdvOut", "Encoder");
 
 	delete streamEncoderProps;
-	streamEncoderProps = CreateEncoderPropertyView(type, "streamEncoder.json");
+
+	if (IsFOV()) {
+		int fov_track_index = config_get_int(main->Config(), "FOV", "VideoTrackSettingsSelect");
+		ui->advOutVTrackSelect->setCurrentIndex(fov_track_index);
+
+		if (fov_track_index <= 0) {
+			streamEncoderProps = CreateEncoderPropertyView(type, "streamEncoder.json");
+		} else {
+			std::stringstream ss;
+			ss << "streamEncoder" << fov_track_index - 1 << ".json";
+
+			streamEncoderProps = CreateEncoderPropertyView(type, ss.str().c_str());
+		}
+	} else {
+		streamEncoderProps = CreateEncoderPropertyView(type, "streamEncoder.json");
+	}
+
 	streamEncoderProps->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 	ui->advOutEncoderLayout->addWidget(streamEncoderProps);
 
@@ -3259,9 +3289,9 @@ static inline const char *SplitFileTypeFromIdx(int idx)
 		return "Time";
 }
 
-static void WriteJsonData(OBSPropertiesView *view, const char *path)
+static void WriteJsonData(OBSPropertiesView *view, const char *path, bool force = false)
 {
-	if (!view || !WidgetChanged(view))
+	if (!view || (!WidgetChanged(view) && !force))
 		return;
 
 	const OBSBasic *basic = OBSBasic::Get();
@@ -3397,6 +3427,7 @@ void OBSBasicSettings::SaveOutputSettings()
 	SaveComboData(ui->advOutRescaleFilter, "AdvOut", "RescaleFilter");
 	SaveTrackIndex(main->Config(), "AdvOut", "TrackIndex", ui->advOutTrack1, ui->advOutTrack2, ui->advOutTrack3,
 		       ui->advOutTrack4, ui->advOutTrack5, ui->advOutTrack6);
+	SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
 	config_set_int(main->Config(), "AdvOut", "StreamMultiTrackAudioMixes", AdvOutGetStreamingSelectedAudioTracks());
 	config_set_string(main->Config(), "AdvOut", "RecType", RecTypeFromIdx(ui->advOutRecType->currentIndex()));
 
@@ -3468,7 +3499,30 @@ void OBSBasicSettings::SaveOutputSettings()
 	SaveSpinBox(ui->advRBSecMax, "AdvOut", "RecRBTime");
 	SaveSpinBox(ui->advRBMegsMax, "AdvOut", "RecRBSize");
 
-	WriteJsonData(streamEncoderProps, "streamEncoder.json");
+
+	if (IsFOV()) {
+		int fov_track_index = config_get_int(main->Config(), "FOV", "VideoTrackSettingsSelect");
+		ui->advOutVTrackSelect->setCurrentIndex(fov_track_index);
+
+		if (fov_track_index <= 0) {
+			WriteJsonData(streamEncoderProps, "streamEncoder.json");
+			for (int i = 0; i < MAX_OUTPUT_VIDEO_ENCODERS; i++) {
+				std::stringstream ss;
+
+				ss << "streamEncoder" << i << ".json";
+				WriteJsonData(streamEncoderProps, ss.str().c_str(), true);
+				ss.clear();
+			}
+		} else {
+			std::stringstream ss;
+
+			ss << "streamEncoder" << fov_track_index - 1 << ".json";
+			WriteJsonData(streamEncoderProps, ss.str().c_str());
+		}
+	} else {
+		WriteJsonData(streamEncoderProps, "streamEncoder.json");
+	}
+
 	WriteJsonData(recordEncoderProps, "recordEncoder.json");
 	main->ResetOutputs();
 }

@@ -16,7 +16,7 @@
 #include <widgets/OBSBasic.hpp>
 
 #include <qt-wrappers.hpp>
-
+#include <utility/AdvancedOutput.hpp>
 #include <QUuid>
 
 /**
@@ -55,6 +55,7 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->outputResLabel->hide();
 		ui->outputResolution->hide();
 		ui->scaledAspect->hide();
+		ui->simpleReplayBuf->hide();
 
 		ui->advOutputReplayTab->setEnabled(false);
 
@@ -69,8 +70,13 @@ void OBSBasicSettings::updateFOVSpecificUI()
 				videoItemList.append(obs_source_get_name(source));
 			}
 
+			int index = ui->advOutVTrackSelect->currentIndex();
+			SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
+
 			ui->advOutVTrackSelect->clear();
 			ui->advOutVTrackSelect->addItems(videoItemList);
+
+			ui->advOutVTrackSelect->setCurrentIndex(index);
 
 			ui->advOutTrack1Name->clear();
 			if (audioSources.size() >= 1 && audioSources.at(0)) {
@@ -128,7 +134,17 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->outputResolution->show();
 		ui->scaledAspect->show();
 
+		ui->simpleReplayBuf->show();
+
 		ui->advOutputReplayTab->setEnabled(true);
+	}
+}
+
+void OBSBasicSettings::updateFOVTrackEncoderSettings()
+{
+	if (ui->advOutVTrackSelect->currentIndex() >= 0) {
+		SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
+		LoadAdvOutputStreamingEncoderProperties();
 	}
 }
 
