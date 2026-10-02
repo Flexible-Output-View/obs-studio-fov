@@ -258,9 +258,7 @@ void AdvancedOutput::UpdateStreamSettings()
 
 		ss << "streamEncoder" << i << ".json";
 		OBSDataAutoRelease settings = GetDataFromJsonFile(ss.str().c_str());
-		if (settings) {
-			fov.updateVideoEncoderSettings(settings, streamEncoder, i);
-		}
+		fov.updateVideoEncoderSettings(settings, streamEncoder, i);
 	}
 }
 
