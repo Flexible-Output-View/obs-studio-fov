@@ -126,6 +126,7 @@ private:
 	QIcon hotkeyConflictIcon;
 
 	void SaveCombo(QComboBox *widget, const char *section, const char *value);
+	void SaveComboIndex(QComboBox *widget, const char *section, const char *value);
 	void SaveComboData(QComboBox *widget, const char *section, const char *value);
 	void SaveCheckBox(QAbstractButton *widget, const char *section, const char *value, bool invert = false);
 	void SaveGroupBox(QGroupBox *widget, const char *section, const char *value);
@@ -134,6 +135,9 @@ private:
 	void SaveText(QPlainTextEdit *widget, const char *section, const char *value);
 	void SaveFormat(QComboBox *combo);
 	void SaveEncoder(QComboBox *combo, const char *section, const char *value);
+
+	void updateFOVSpecificUI();
+	void updateFOVTrackEncoderSettings();
 
 	bool ResFPSValid(obs_service_resolution *res_list, size_t res_count, int max_fps);
 
@@ -205,7 +209,7 @@ private:
 	void InitStreamPage();
 	bool IsCustomService() const;
 	inline bool IsWHIP() const;
-	inline bool IsFOV() const;
+	bool IsFOV() const;
 	void LoadServices(bool showAll);
 	void OnOAuthStreamKeyConnected();
 	void OnAuthConnected();

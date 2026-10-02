@@ -1,4 +1,8 @@
 #include "AdvancedOutput.hpp"
+#include "obs-output.h"
+#include "obs.hpp"
+#include "utility/BasicOutputHandler.hpp"
+#include "utility/FOVSystem.hpp"
 
 #include <utility/audio-encoders.hpp>
 #include <utility/StartMultiTrackVideoStreamingGuard.hpp>
@@ -8,7 +12,7 @@
 
 using namespace std;
 
-static OBSData GetDataFromJsonFile(const char *jsonFile)
+OBSData GetDataFromJsonFile(const char *jsonFile)
 {
 	const OBSBasic *basic = OBSBasic::Get();
 
@@ -247,8 +251,15 @@ void AdvancedOutput::UpdateStreamSettings()
 	}
 
 	obs_encoder_update(videoStreaming, settings);
-
 	fov.updateVideoEncoderSettings(settings, streamEncoder);
+
+	for (int i = 0; i < MAX_OUTPUT_VIDEO_ENCODERS; i++) {
+		std::stringstream ss;
+
+		ss << "streamEncoder" << i << ".json";
+		OBSDataAutoRelease settings = GetDataFromJsonFile(ss.str().c_str());
+		fov.updateVideoEncoderSettings(settings, streamEncoder, i);
+	}
 }
 
 AdvancedOutput::~AdvancedOutput()
@@ -538,8 +549,8 @@ inline void AdvancedOutput::UpdateAudioSettings()
 		} else {
 			obs_encoder_update(streamTrack[i], settings[i]);
 		}
+		fov.updateAudioEncoderSettings(settings[i], audioEncoder, i);
 	}
-	fov.updateAudioEncoderSettings(settings[0], audioEncoder);
 }
 
 void AdvancedOutput::SetupOutputs()

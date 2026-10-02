@@ -1,6 +1,10 @@
 #include "OBSBasicSettings.hpp"
+#include "obs-source.h"
 #include "obs.h"
+#include "obs.hpp"
 #include <qcontainerfwd.h>
+#include <qobject.h>
+#include <vector>
 
 #ifdef YOUTUBE_ENABLED
 #include <docks/YouTubeAppDock.hpp>
@@ -12,8 +16,137 @@
 #include <widgets/OBSBasic.hpp>
 
 #include <qt-wrappers.hpp>
-
+#include <utility/AdvancedOutput.hpp>
 #include <QUuid>
+
+/**
+ * @brief Disable and enable specific UI elemnts to match the supported feature set of FOV.
+ */
+void OBSBasicSettings::updateFOVSpecificUI()
+{
+	bool isFOV = IsFOV();
+
+	if (isFOV) {
+		ui->advOutVTrackSelect->show();
+		ui->advOutTrack1Name->setEnabled(false);
+		ui->advOutTrack2Name->setEnabled(false);
+		ui->advOutTrack3Name->setEnabled(false);
+		ui->advOutTrack4Name->setEnabled(false);
+		ui->advOutTrack5Name->setEnabled(false);
+		ui->advOutTrack6Name->setEnabled(false);
+
+		ui->advStreamTrackWidget->hide();
+		ui->advStreamTrackWidgetLabel->hide();
+
+		ui->advOutRescale->hide();
+		ui->advOutRescale->blockSignals(true);
+		ui->advOutRescale->setDisabled(true);
+
+		ui->advOutRescaleFilter->hide();
+		ui->advOutRescaleFilter->blockSignals(true);
+		ui->advOutRescaleFilter->setEnabled(false);
+
+		ui->advOutUseRescale->hide();
+		ui->advOutUseRescale->blockSignals(true);
+		ui->advOutUseRescale->setEnabled(false);
+
+		ui->downscaleFilter->hide();
+		ui->label_11->hide();
+		ui->outputResLabel->hide();
+		ui->outputResolution->hide();
+		ui->scaledAspect->hide();
+		ui->simpleReplayBuf->hide();
+
+		ui->advOutputReplayTab->setEnabled(false);
+
+		if (main->outputHandler) {
+			auto sources = main->outputHandler->fov.getOBSSources();
+			auto audioSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_AUDIO, true);
+			auto videoSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_VIDEO, true);
+
+			QStringList videoItemList;
+			videoItemList.append("All Tracks");
+			for (const auto &source : videoSources) {
+				videoItemList.append(obs_source_get_name(source));
+			}
+
+			int index = ui->advOutVTrackSelect->currentIndex();
+			SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
+
+			ui->advOutVTrackSelect->clear();
+			ui->advOutVTrackSelect->addItems(videoItemList);
+
+			ui->advOutVTrackSelect->setCurrentIndex(index);
+
+			ui->advOutTrack1Name->clear();
+			if (audioSources.size() >= 1 && audioSources.at(0)) {
+				ui->advOutTrack1Name->setText(QString(obs_source_get_name(audioSources[0])));
+			}
+			ui->advOutTrack2Name->clear();
+			if (audioSources.size() >= 2 && audioSources.at(1)) {
+				ui->advOutTrack2Name->setText(QString(obs_source_get_name(audioSources[1])));
+			}
+			ui->advOutTrack3Name->clear();
+			if (audioSources.size() >= 3 && audioSources.at(2)) {
+				ui->advOutTrack3Name->setText(QString(obs_source_get_name(audioSources[2])));
+			}
+			ui->advOutTrack4Name->clear();
+			if (audioSources.size() >= 4 && audioSources.at(3)) {
+				ui->advOutTrack4Name->setText(QString(obs_source_get_name(audioSources[3])));
+			}
+			ui->advOutTrack5Name->clear();
+			if (audioSources.size() >= 5 && audioSources.at(4)) {
+				ui->advOutTrack5Name->setText(QString(obs_source_get_name(audioSources[4])));
+			}
+			ui->advOutTrack6Name->clear();
+			if (audioSources.size() >= 6 && audioSources.at(5)) {
+				ui->advOutTrack6Name->setText(QString(obs_source_get_name(audioSources[5])));
+			}
+		}
+
+	} else {
+		ui->advOutVTrackSelect->hide();
+		ui->advOutTrack1Name->setEnabled(true);
+		ui->advOutTrack2Name->setEnabled(true);
+		ui->advOutTrack3Name->setEnabled(true);
+		ui->advOutTrack4Name->setEnabled(true);
+		ui->advOutTrack5Name->setEnabled(true);
+		ui->advOutTrack6Name->setEnabled(true);
+
+		ui->advStreamTrackWidget->show();
+		ui->advStreamTrackWidgetLabel->show();
+
+		ui->advOutRescale->show();
+		ui->advOutRescale->blockSignals(false);
+		ui->advOutRescale->setDisabled(false);
+
+		ui->advOutRescaleFilter->show();
+		ui->advOutRescaleFilter->blockSignals(false);
+		ui->advOutRescaleFilter->setEnabled(true);
+
+		ui->advOutUseRescale->show();
+		ui->advOutUseRescale->blockSignals(false);
+		ui->advOutUseRescale->setEnabled(true);
+
+		ui->downscaleFilter->show();
+		ui->label_11->show();
+		ui->outputResLabel->show();
+		ui->outputResolution->show();
+		ui->scaledAspect->show();
+
+		ui->simpleReplayBuf->show();
+
+		ui->advOutputReplayTab->setEnabled(true);
+	}
+}
+
+void OBSBasicSettings::updateFOVTrackEncoderSettings()
+{
+	if (ui->advOutVTrackSelect->currentIndex() >= 0) {
+		SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
+		LoadAdvOutputStreamingEncoderProperties();
+	}
+}
 
 static const QUuid &CustomServerUUID()
 {
@@ -50,7 +183,7 @@ inline bool OBSBasicSettings::IsWHIP() const
 	return ui->service->currentData().toInt() == (int)ListOpt::WHIP;
 }
 
-inline bool OBSBasicSettings::IsFOV() const
+bool OBSBasicSettings::IsFOV() const
 {
 	return ui->service->currentData().toInt() == (int)ListOpt::FOV;
 }
@@ -242,6 +375,7 @@ void OBSBasicSettings::LoadStream1Settings()
 	loading = false;
 
 	QMetaObject::invokeMethod(this, "UpdateResFPSLimits", Qt::QueuedConnection);
+	updateFOVSpecificUI();
 }
 
 #define SRT_PROTOCOL "srt"
@@ -327,6 +461,8 @@ void OBSBasicSettings::SaveStream1Settings()
 	} else {
 		obs_data_set_string(settings, "key", QT_TO_UTF8(ui->key->text()));
 	}
+
+	updateFOVSpecificUI();
 
 	OBSServiceAutoRelease newService = obs_service_create(service_id, "default_service", settings, hotkeyData);
 
@@ -630,6 +766,8 @@ void OBSBasicSettings::ServiceChanged(bool resetFields)
 	bool custom = IsCustomService();
 	bool whip = IsWHIP();
 	bool isFOV = IsFOV();
+
+	updateFOVSpecificUI();
 
 	ui->disconnectAccount->setVisible(false);
 	ui->bandwidthTestEnable->setVisible(false);
