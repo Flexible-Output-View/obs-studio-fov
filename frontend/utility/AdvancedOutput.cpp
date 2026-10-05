@@ -9,6 +9,8 @@
 #include <widgets/OBSBasic.hpp>
 
 #include <qt-wrappers.hpp>
+#include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -549,7 +551,7 @@ inline void AdvancedOutput::UpdateAudioSettings()
 		} else {
 			obs_encoder_update(streamTrack[i], settings[i]);
 		}
-		fov.updateAudioEncoderSettings(settings[i], audioEncoder, i);
+		fov.updateAudioEncoderSettings(settings[i], audioEncoder, (int) i);
 	}
 }
 
