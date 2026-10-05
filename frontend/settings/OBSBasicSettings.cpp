@@ -660,7 +660,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	ui->disableOSXVSync = nullptr;
 	ui->resetOSXVSync = nullptr;
 #endif
-	connect(ui->advOutVTrackSelect, &QComboBox::currentIndexChanged, this,
+	connect(ui->advOutVTrackSelect, &QComboBox::currentIndexChanged, this, 
 		&OBSBasicSettings::updateFOVTrackEncoderSettings);
 	connect(ui->streamDelaySec, &QSpinBox::valueChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
 	connect(ui->outputMode, &QComboBox::currentIndexChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
@@ -1912,7 +1912,7 @@ OBSPropertiesView *OBSBasicSettings::CreateEncoderPropertyView(const char *encod
 	return view;
 }
 
-void OBSBasicSettings::LoadAdvOutputStreamingEncoderProperties()
+void OBSBasicSettings::LoadAdvOutputStreamingEncoderProperties(bool setEncoderDropdown)
 {
 	const char *type = config_get_string(main->Config(), "AdvOut", "Encoder");
 
@@ -1942,15 +1942,17 @@ void OBSBasicSettings::LoadAdvOutputStreamingEncoderProperties()
 
 	curAdvStreamEncoder = type;
 
-	if (!SetComboByValue(ui->advOutEncoder, type)) {
-		uint32_t caps = obs_get_encoder_caps(type);
-		if ((caps & ENCODER_HIDE_FLAGS) != 0) {
-			QString encName = QT_UTF8(obs_encoder_get_display_name(type));
-			if (caps & OBS_ENCODER_CAP_DEPRECATED)
-				encName += " (" + QTStr("Deprecated") + ")";
+	if (setEncoderDropdown) {
+		if (!SetComboByValue(ui->advOutEncoder, type)) {
+			uint32_t caps = obs_get_encoder_caps(type);
+			if ((caps & ENCODER_HIDE_FLAGS) != 0) {
+				QString encName = QT_UTF8(obs_encoder_get_display_name(type));
+				if (caps & OBS_ENCODER_CAP_DEPRECATED)
+					encName += " (" + QTStr("Deprecated") + ")";
 
-			ui->advOutEncoder->insertItem(0, encName, QT_UTF8(type));
-			SetComboByValue(ui->advOutEncoder, type);
+				ui->advOutEncoder->insertItem(0, encName, QT_UTF8(type));
+				SetComboByValue(ui->advOutEncoder, type);
+			}
 		}
 	}
 

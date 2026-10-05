@@ -26,6 +26,8 @@ void OBSBasicSettings::updateFOVSpecificUI()
 {
 	bool isFOV = IsFOV();
 
+	int encoderIndex = -1;
+
 	if (isFOV) {
 		ui->advOutVTrackSelect->show();
 		ui->advOutTrack1Name->setEnabled(false);
@@ -58,6 +60,9 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->simpleReplayBuf->hide();
 
 		ui->advOutputReplayTab->setEnabled(false);
+
+		encoderIndex = ui->advOutEncoder->currentIndex();
+		SaveComboIndex(ui->advOutEncoder, "FOV", "StreamEncoderSettingsSelect");
 
 		if (main->outputHandler) {
 			auto sources = main->outputHandler->fov.getOBSSources();
@@ -137,6 +142,10 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		ui->simpleReplayBuf->show();
 
 		ui->advOutputReplayTab->setEnabled(true);
+
+		if (encoderIndex >= 0) {
+			ui->advOutEncoder->setCurrentIndex(encoderIndex);
+		}
 	}
 }
 
@@ -144,8 +153,9 @@ void OBSBasicSettings::updateFOVTrackEncoderSettings()
 {
 	if (ui->advOutVTrackSelect->currentIndex() >= 0) {
 		SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
-		LoadAdvOutputStreamingEncoderProperties();
 	}
+
+	LoadAdvOutputStreamingEncoderProperties(false);
 }
 
 static const QUuid &CustomServerUUID()

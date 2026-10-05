@@ -256,7 +256,7 @@ private:
 	/* output */
 	void LoadSimpleOutputSettings();
 	void LoadAdvOutputStreamingSettings();
-	void LoadAdvOutputStreamingEncoderProperties();
+	void LoadAdvOutputStreamingEncoderProperties(bool setEncoderDropdown = false);
 	void LoadAdvOutputRecordingSettings();
 	void LoadAdvOutputRecordingEncoderProperties();
 	void LoadAdvOutputFFmpegSettings();
