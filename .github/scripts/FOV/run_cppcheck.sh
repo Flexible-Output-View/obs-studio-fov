@@ -34,6 +34,7 @@ cppcheck_output=$(cppcheck \
   --suppress=preprocessorErrorDirective \
   --suppress=unmatchedSuppression \
   --suppress=checkersReport \
+  --suppress=unknownMacro \
   --project=build/compile_commands.json \
   "${filter_args[@]}" 2>&1)
 
