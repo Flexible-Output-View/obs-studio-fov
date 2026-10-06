@@ -38,7 +38,7 @@ jobs:
   cppcheck:
     name: Code analyzer cppcheck
     needs: check_program_compilation_linux
-    runs-on: [ self-hosted, linux, x64, ubuntu ]
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -46,6 +46,11 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 2
+
+      - name: Install Cppcheck
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y cppcheck
 
       - name: Download Linux Build Folder
         uses: actions/download-artifact@v7
