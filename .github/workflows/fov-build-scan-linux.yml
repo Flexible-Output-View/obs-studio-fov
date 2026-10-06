@@ -27,16 +27,12 @@ jobs:
         with:
           name: linux-build-folder
           path: build/
-          include-hidden-files: false
-          if-no-files-found: error
 
       - name: Upload Linux Artifact (Debug)
         uses: actions/upload-artifact@v7
         with:
           name: FOV-linux-x64-debug
           path: build/rundir/
-          include-hidden-files: false
-          if-no-files-found: error
 
   cppcheck:
     name: Code analyzer cppcheck
@@ -96,13 +92,13 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: linux-build-folder
-          path: build-codechecker/
+          path: build/
 
       - name: Run CodeChecker Analysis
         run: |
           echo -e "-*/deps/*\n-*/QtCore/*\n-*/usr/include/*" > ./skip.file
 
-          CodeChecker analyze ./build-codechecker/compile_commands.json \
+          CodeChecker analyze ./build/compile_commands.json \
             --ignore ./skip.file \
             --output ./reports
 
