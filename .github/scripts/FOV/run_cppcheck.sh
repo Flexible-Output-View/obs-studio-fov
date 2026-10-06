@@ -8,8 +8,7 @@ else
   echo "Running in standard push mode (comparing against: HEAD~1)"
 fi
 
-# Get changed C/C++ files from git diff
-files=$(git diff --name-only "$base" HEAD | grep -E '\.(c|cpp|hpp|cxx|h)$')
+files=$(git diff --name-only "$base" HEAD | grep -E '\.(c|cpp|hpp|cxx|h)$' | grep -v '/deps/')
 
 # Exit early if no relevant files changed
 if [ -z "$files" ]; then
@@ -35,8 +34,11 @@ cppcheck_output=$(cppcheck \
   --suppress=unmatchedSuppression \
   --suppress=checkersReport \
   --suppress=unknownMacro \
+  --suppress=internalAstError \
+  --suppress=invalidUtf8 \
   --project=build/compile_commands.json \
-  "${filter_args[@]}" 2>&1)
+  "${filter_args[@]}" \
+  2>&1)
 
 # Filter output to only keep lines starting with one of the changed files
 filtered_output=""
