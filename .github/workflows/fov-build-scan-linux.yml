@@ -100,11 +100,10 @@ jobs:
 
       - name: Run CodeChecker Analysis
         run: |
+          echo -e "-*/deps/*\n-*/QtCore/*\n-*/usr/include/*" > ./skip.file
+
           CodeChecker analyze ./build-codechecker/compile_commands.json \
-            --exclude /usr/include \
-            --exclude /usr/local/include \
-            --exclude /opt \
-            --exclude deps \
+            --ignore ./skip.file \
             --output ./reports
 
       - name: Export to SARIF
