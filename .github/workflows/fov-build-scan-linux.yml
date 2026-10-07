@@ -27,7 +27,6 @@ jobs:
         with:
           name: linux-build-folder
           path: build/
-          retention-days: 1
 
       - name: Upload Linux Artifact (Debug)
         uses: actions/upload-artifact@v7
@@ -38,7 +37,7 @@ jobs:
   cppcheck:
     name: Code analyzer cppcheck
     needs: check_program_compilation_linux
-    runs-on: [ self-hosted, linux, x64, ubuntu ]
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -46,6 +45,11 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 2
+
+      - name: Install Cppcheck
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y cppcheck
 
       - name: Download Linux Build Folder
         uses: actions/download-artifact@v7
@@ -84,7 +88,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Download Linux Build Folder
+      - name: Download Linux Build Folder for CodeChecker
         uses: actions/download-artifact@v7
         with:
           name: linux-build-folder
@@ -92,7 +96,11 @@ jobs:
 
       - name: Run CodeChecker Analysis
         run: |
-          CodeChecker analyze ./build/compile_commands.json --output ./reports
+          echo -e "-*/deps/*\n-*/QtCore/*\n-*/usr/include/*" > ./skip.file
+
+          CodeChecker analyze ./build/compile_commands.json \
+            --ignore ./skip.file \
+            --output ./reports
 
       - name: Export to SARIF
         if: always()
@@ -105,4 +113,3 @@ jobs:
         with:
           sarif_file: results.sarif
           category: codechecker
-
