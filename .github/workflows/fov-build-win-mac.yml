@@ -7,6 +7,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   check_program_compilation_windows:
     name: FOV - Build on Windows
@@ -18,27 +21,26 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build (Debug)
-        shell: powershell
-        run: ./.github/scripts/FOV/build_windows.ps1
-
-      - name: Upload Windows Artifact (Debug)
-        uses: actions/upload-artifact@v7
-        with:
-          name: FOV-windows-x64-debug
-          path: build_x64/rundir/Debug
-
       - name: Build Release
-        if: github.ref_name == 'master' || github.ref_name == 'dev'
         shell: powershell
         run: ./.github/scripts/FOV/build_windows_release.ps1
 
-      - name: Upload Windows Release Artifact
-        if: github.ref_name == 'master' || github.ref_name == 'dev'
+      - name: Zip Release Package
+        shell: powershell
+        run: Compress-Archive -Path build_x64/rundir/Release/* -DestinationPath FOV-windows-x64-release.zip -Force
+
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v7
         with:
           name: FOV-windows-x64-release
-          path: build_x64/rundir/Release
+          path: FOV-windows-x64-release.zip
+
+      - name: Upload to Existing Release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ github.ref_name }} FOV-windows-x64-release.zip --clobber
 
   check_program_compilation_macos:
     name: FOV - Build on macOS
@@ -50,29 +52,20 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build (Debug)
-        run: ./.github/scripts/FOV/build_macos.sh
-
-      - name: Package Debug DMG
-        run: ./.github/scripts/FOV/package_dmg.sh build_macos FOV-macos-arm64-debug.dmg
-
-      - name: Upload macOS Debug Artifact (DMG)
-        uses: actions/upload-artifact@v7
-        with:
-          name: FOV-macos-arm64-debug-dmg
-          path: FOV-macos-arm64-debug.dmg
-
       - name: Build Release
-        if: env.IS_RELEASE_BRANCH == 'true'
         run: ./.github/scripts/FOV/build_macos_release.sh
 
       - name: Package Release DMG
-        if: env.IS_RELEASE_BRANCH == 'true'
         run: ./.github/scripts/FOV/package_dmg.sh build_macos FOV-macos-arm64-release.dmg
 
-      - name: Upload macOS Release Artifact (DMG)
-        if: env.IS_RELEASE_BRANCH == 'true'
+      - name: Upload macOS Artifact
         uses: actions/upload-artifact@v7
         with:
           name: FOV-macos-arm64-release-dmg
           path: FOV-macos-arm64-release.dmg
+
+      - name: Upload to Existing Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ github.ref_name }} FOV-macos-arm64-release.dmg --clobber
