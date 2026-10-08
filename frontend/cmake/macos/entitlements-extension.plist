@@ -14,7 +14,7 @@
         <true/>
         <key>com.apple.security.application-groups</key>
         <array>
-            <string>$(TeamIdentifierPrefix)com.obsproject.obs-studio</string>
+            <string>$(TeamIdentifierPrefix)com.flexible_output_view.FOV</string>
         </array>
     </dict>
 </plist>

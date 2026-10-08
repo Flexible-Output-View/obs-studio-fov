@@ -399,13 +399,13 @@ void OBSBasic::logUploadFinished(const QString &text, const QString &error, LogU
 
 void OBSBasic::on_actionHelpPortal_triggered()
 {
-	QUrl url = QUrl("https://obsproject.com/help", QUrl::TolerantMode);
+	QUrl url = QUrl("https://flexible-output-view.github.io/documentation-fov/user_guide.html", QUrl::TolerantMode);
 	QDesktopServices::openUrl(url);
 }
 
 void OBSBasic::on_actionWebsite_triggered()
 {
-	QUrl url = QUrl("https://obsproject.com", QUrl::TolerantMode);
+	QUrl url = QUrl("https://fovapp.live", QUrl::TolerantMode);
 	QDesktopServices::openUrl(url);
 }
 
@@ -435,7 +435,7 @@ void OBSBasic::on_actionShowWhatsNew_triggered()
 
 void OBSBasic::on_actionReleaseNotes_triggered()
 {
-	QString addr("https://github.com/obsproject/obs-studio/releases");
+	QString addr("https://github.com/Flexible-Output-View/obs-studio-fov/releases");
 	QUrl url(QString("%1/%2").arg(addr, obs_get_version_string()), QUrl::TolerantMode);
 	QDesktopServices::openUrl(url);
 }
@@ -618,10 +618,11 @@ void OBSBasic::on_actionMainRedo_triggered()
 
 void OBSBasic::on_autoConfigure_triggered()
 {
-	AutoConfig test(this);
+	return;
+	/* AutoConfig test(this);
 	test.setModal(true);
 	test.show();
-	test.exec();
+	test.exec(); */
 }
 
 void OBSBasic::on_stats_triggered()
