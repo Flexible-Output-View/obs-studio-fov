@@ -78,12 +78,12 @@ void OBSBasic::SetupNewProfile(const std::string &profileName, bool useWizard)
 	blog(LOG_INFO, "Created profile '%s' (clean, %s)", newProfile.name.c_str(), newProfile.directoryName.c_str());
 	blog(LOG_INFO, "------------------------------------------------");
 
-	if (useWizard) {
+	/* if (useWizard) {
 		AutoConfig wizard(this);
 		wizard.setModal(true);
 		wizard.show();
 		wizard.exec();
-	}
+	} */
 }
 
 void OBSBasic::SetupDuplicateProfile(const std::string &profileName)

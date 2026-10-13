@@ -23,8 +23,9 @@ option(ENABLE_HEVC "Enable HEVC encoders" ON)
 
 # FOV Specific debug flags
 option(ENABLE_FOV_DEBUG_INGEST "Enable ingest stream debugging for flexible-output-view" ON)
-add_subdirectory("${CMAKE_SOURCE_DIR}/deps/moq/rs/libmoq")
+option(FOV_INTEGRATION_TEST "Build FOV as an integration test" OFF)
 
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/moq/rs/libmoq")
 
 add_subdirectory(libobs)
 if(OS_WINDOWS)

@@ -28,3 +28,7 @@ endif()
 target_link_libraries(flexible-output-view PRIVATE OBS::libobs $<$<PLATFORM_ID:Windows>:OBS::w32-pthreads> OBS::frontend-api CURL::libcurl moq)
 
 set_target_properties_obs(flexible-output-view PROPERTIES FOLDER plugins PREFIX "")
+
+if (FOV_INTEGRATION_TEST)
+    add_subdirectory(integration_test)
+endif()

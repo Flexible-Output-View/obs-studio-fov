@@ -46,3 +46,5 @@ struct AdvancedOutput : BasicOutputHandler {
 	virtual bool ReplayBufferActive() const override;
 	bool allowsMultiTrack();
 };
+
+OBSData GetDataFromJsonFile(const char *jsonFile);
