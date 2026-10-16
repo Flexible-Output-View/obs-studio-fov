@@ -11,6 +11,7 @@
 #include "obs-data.h"
 #include "obs.h"
 #include "util/base.h"
+#include <exception>
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 #include <thread>
@@ -200,6 +201,8 @@ const char *FOVService::getConnectInfo(uint32_t type) noexcept
  */
 const char *FOVService::getURL(void) noexcept
 {
+	std::string APIRoute = backendURL + API_FFMPEG_START_ROUTE;
+
 	if (backendURL.empty() || nbVideoTracks == 0) {
 		blog(LOG_WARNING, "FOV Service is misconfigured nbVideoTracks:%ld nbAudioTracks:%ld server:%s\n",
 		     nbVideoTracks, nbAudioTracks, backendURL.c_str());
@@ -210,12 +213,16 @@ const char *FOVService::getURL(void) noexcept
 		return ingestURL.c_str();
 	}
 
-	const std::string APIRoute = backendURL + API_FFMPEG_START_ROUTE;
+	std::string protocol;
+	if (service != nullptr) {
+		protocol = obs_service_get_protocol(service);
+	}
+	if (protocol == "MoQ") {
+		APIRoute = backendURL + API_MOQ_START_ROUTE;
+	}
+
 	nlohmann::json jsonPayload;
 	jsonPayload["streamId"] = streamKey;
-	if (service != nullptr) {
-		jsonPayload["protocol"] = obs_service_get_protocol(service);
-	}
 	jsonPayload["tracks"] = nbVideoTracks;
 	jsonPayload["videoTrackNames"] = videoTrackNames;
 	jsonPayload["audioTracks"] = nbAudioTracks;
@@ -237,7 +244,7 @@ const char *FOVService::getURL(void) noexcept
 			     request.getResponseContent().c_str());
 			started = true;
 			nlohmann::json response = nlohmann::json::parse(request.getResponseContent());
-			ingestURL = response["srtUrl"].get<std::string>();
+			ingestURL = response["ingestUrl"].get<std::string>();
 			blog(LOG_INFO, "FOV Service got ingest url = %s\n", ingestURL.c_str());
 			return ingestURL.c_str();
 
@@ -247,7 +254,7 @@ const char *FOVService::getURL(void) noexcept
 			return "\0";
 		}
 
-	} catch (const SimpleCurlException &e) {
+	} catch (const std::exception &e) {
 		blog(LOG_ERROR, "FOV Service error: %s\n", e.what());
 		return "\0";
 	}
@@ -269,7 +276,17 @@ void FOVService::deactivate(void) noexcept
 {
 	blog(LOG_INFO, "FOV Service deactivated\n");
 
-	const std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
+	std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
+	std::string protocol;
+
+	if (service != nullptr) {
+		protocol = obs_service_get_protocol(service);
+	}
+	if (protocol == "MoQ") {
+		APIRoute = backendURL + API_MOQ_STOP_ROUTE;
+	}
+
+
 	nlohmann::json jsonPayload;
 	jsonPayload["streamId"] = streamKey;
 

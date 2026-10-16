@@ -29,6 +29,9 @@
 
 #define API_FFMPEG_STOP_ROUTE "/ffmpeg/stop"       /**< API route used to terminate multi-track streaming. */
 
+#define API_MOQ_START_ROUTE "/moq/register"  /**< API route used to initiate multi-track streaming using moq. */
+#define API_MOQ_STOP_ROUTE "/moq/stop"       /**< API route used to terminate multi-track streaming. */
+
 extern "C" {
 /**
  * @brief Register the custom FOV service module with the OBS framework core.
