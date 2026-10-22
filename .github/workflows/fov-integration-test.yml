@@ -1,13 +1,13 @@
 name: FOV Integration Test
 
 on:
+  push:
+      branches:
+        - master
   pull_request:
     branches:
       - dev
       - master
-
-env:
-  IS_RELEASE_BRANCH: ${{ github.ref_name == 'dev' || github.ref_name == 'master' }}
 
 jobs:
   integration_test:

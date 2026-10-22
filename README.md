@@ -12,6 +12,17 @@ This repository contains a customized distribution of **OBS Studio**, specifical
 
 ---
 
+## CI Status
+| Component / Pipeline | Main (Production) | Dev (Development) |
+| ---: | :--- | :--- |
+| **FOV Integration Test** | [![FOV Integration Test](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-integration-test.yml/badge.svg?branch=master)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-integration-test.yml) | [![FOV Integration Test](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-integration-test.yml/badge.svg?branch=dev)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-integration-test.yml) |
+| **Code Analysis** | [![FOV Linux CI & Analysis](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-scan-linux.yml/badge.svg?branch=master)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-scan-linux.yml) | [![FOV Linux CI & Analysis](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-scan-linux.yml/badge.svg?branch=dev)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-scan-linux.yml) |
+| **Windows and macOS Build** | [![FOV Windows & macOS Builds](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-win-mac.yml/badge.svg?branch=master)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-win-mac.yml) | [![FOV Windows & macOS Builds](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-win-mac.yml/badge.svg?branch=dev)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-win-mac.yml) |
+| **Linux Flatpak Build** | [![FOV Flatpak Build](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-flatpak.yml/badge.svg?branch=master)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-flatpak.yml) | [![FOV Flatpak Build](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-flatpak.yml/badge.svg?branch=dev)](https://github.com/Flexible-Output-View/obs-studio-fov/actions/workflows/fov-build-flatpak.yml) |
+
+
+---
+
 ## 👥 Maintainers
 
 | Name | GitHub |
