@@ -676,7 +676,7 @@ void MoQOutput::AudioInit(obs_encoder_t *encoder)
 
 void register_moq_output()
 {
-	const uint32_t base_flags = OBS_OUTPUT_ENCODED | OBS_OUTPUT_SERVICE | OBS_OUTPUT_MULTI_TRACK_VIDEO | OBS_OUTPUT_MULTI_TRACK_AV | OBS_OUTPUT_MULTI_TRACK_AUDIO;
+	const uint32_t base_flags = OBS_OUTPUT_ENCODED | OBS_OUTPUT_SERVICE | OBS_OUTPUT_MULTI_TRACK_VIDEO | OBS_OUTPUT_MULTI_TRACK_AUDIO;
 
 	const char *audio_codecs = "aac;opus";
 	const char *video_codecs = "h264;hevc;av1";
