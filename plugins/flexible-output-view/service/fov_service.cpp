@@ -265,6 +265,11 @@ const char *FOVService::getURL(void) noexcept
 			     request.getResponseContent().c_str());
 			started = true;
 			nlohmann::json response = nlohmann::json::parse(request.getResponseContent());
+			if (!response.contains("srtURL")) {
+				blog(LOG_ERROR, "FOV Service received incomplete response: %s\n",
+				     request.getResponseContent().c_str());
+				return "\0";
+			}
 			srtURL = response["srtUrl"].get<std::string>();
 
 			if (!checkURL(srtURL, "srt")) {
