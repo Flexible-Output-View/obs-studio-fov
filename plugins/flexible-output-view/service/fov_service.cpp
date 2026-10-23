@@ -13,6 +13,7 @@
 #include "util/base.h"
 #include <exception>
 #include <nlohmann/json_fwd.hpp>
+#include <regex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -20,6 +21,32 @@
 static const char *fov_audio_codecs[] = {"opus", "aac",
 					 nullptr};         /**< Array containing supported audio codec string names. */
 static const char *fov_video_codecs[] = {"h264", nullptr}; /**< Array containing supported video codec string names. */
+
+/**
+ * @brief Check if a URL is valid according to the defined protocols
+ * @param[in] url The input URL
+ * @param[in] protocols Valid protocols separated by |
+ * @return true The URL is valid
+ * @return false The URL is invalid
+ */
+static bool checkURL(const std::string &url, const std::string &protocols = "http|https")
+{
+	const auto regexPatternStr = "((" + protocols +
+				     ")://)"
+				     "(([a-zA-Z0-9.-]+\\.[a-z]{2,6})|"
+				     "(localhost)|"
+				     "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))"
+				     "(:\\d{1,5})?"
+				     "([/?][-a-zA-Z0-9@:%._\\+~#?&//=]*)?";
+
+	const std::regex pattern(regexPatternStr);
+
+	if (url.empty() || url.size() <= 6) {
+		return false;
+	}
+
+	return (std::regex_match(url, pattern));
+}
 
 /**
  * @brief Converts an obs data array to an nlohmann json structure.
@@ -117,6 +144,11 @@ void FOVService::update(obs_data_t *settings) noexcept
 	std::string server = obs_data_get_string(settings, "server");
 	std::string key = obs_data_get_string(settings, "key");
 	if (!server.empty()) {
+		const std::string badSymbols = "/\\#-;=?!-[]_@^`~{}<>*+.\"&";
+
+		if (badSymbols.find(server.at(server.length() - 1)) != badSymbols.npos) {
+			server.erase(server.end() - 1, server.end());
+		}
 		backendURL = server;
 	}
 	if (!key.empty()) {
@@ -144,8 +176,8 @@ void FOVService::update(obs_data_t *settings) noexcept
 	this->nbVideoTracks = newVideoTracks;
 	this->nbAudioTracks = newAudioTracks;
 
-	blog(LOG_INFO, "FOV Service settings changed: nbVideoTracks:%ld nbAudioTracks:%ld server:%s key:%s\n",
-	     nbVideoTracks, nbAudioTracks, backendURL.c_str(), streamKey.c_str());
+	blog(LOG_INFO, "FOV Service settings changed: nbVideoTracks:%ld nbAudioTracks:%ld server:%s\n", nbVideoTracks,
+	     nbAudioTracks, backendURL.c_str());
 }
 
 /**
@@ -158,8 +190,6 @@ obs_properties_t *FOVService::getProperties(void) noexcept
 
 	obs_properties_add_text(ppts, "server", "URL", OBS_TEXT_DEFAULT);
 	obs_properties_add_text(ppts, "key", "Stream Key", OBS_TEXT_DEFAULT);
-	obs_properties_add_int(ppts, "nbVideoTracks", "Number of video tracks", 1, 6, 1);
-	obs_properties_add_int(ppts, "nbAudioTracks", "Number of audio tracks", 1, 6, 1);
 
 	return ppts;
 }
@@ -213,12 +243,20 @@ const char *FOVService::getURL(void) noexcept
 		return ingestURL.c_str();
 	}
 
+	bool ismoq = false;
 	std::string protocol;
 	if (service != nullptr) {
 		protocol = obs_service_get_protocol(service);
 	}
 	if (protocol == "MoQ") {
+		ismoq = true;
 		APIRoute = backendURL + API_MOQ_START_ROUTE;
+	}
+
+
+	if (!checkURL(APIRoute)) {
+		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
+		return "\0";
 	}
 
 	nlohmann::json jsonPayload;
@@ -244,7 +282,18 @@ const char *FOVService::getURL(void) noexcept
 			     request.getResponseContent().c_str());
 			started = true;
 			nlohmann::json response = nlohmann::json::parse(request.getResponseContent());
+			if (!response.contains("ingestUrl")) {
+				blog(LOG_ERROR, "FOV Service received incomplete response: %s\n",
+				     request.getResponseContent().c_str());
+				return "\0";
+			}
 			ingestURL = response["ingestUrl"].get<std::string>();
+
+			if (!checkURL(ingestURL, (ismoq) ? "http|https" : "srt")) {
+				blog(LOG_ERROR, "FOV Service got invalid ingest URL: %s\n", ingestURL.c_str());
+				return "\0";
+			}
+
 			blog(LOG_INFO, "FOV Service got ingest url = %s\n", ingestURL.c_str());
 			return ingestURL.c_str();
 
@@ -286,6 +335,10 @@ void FOVService::deactivate(void) noexcept
 		APIRoute = backendURL + API_MOQ_STOP_ROUTE;
 	}
 
+	if (!checkURL(APIRoute)) {
+		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
+		return;
+	}
 
 	nlohmann::json jsonPayload;
 	jsonPayload["streamId"] = streamKey;

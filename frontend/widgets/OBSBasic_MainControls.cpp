@@ -186,6 +186,9 @@ void OBSBasic::on_actionRemux_triggered()
 
 void OBSBasic::on_action_Settings_triggered()
 {
+	if (FOVUIGuards()) {
+		return;
+	}
 	static bool settings_already_executing = false;
 
 	/* Do not load settings window if inside of a temporary event loop
