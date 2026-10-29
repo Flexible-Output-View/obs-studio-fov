@@ -876,9 +876,19 @@ bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
 
 bool SimpleOutput::StartRecording()
 {
+	bool fovMultitrackRec = config_get_bool(main->Config(), "SimpleOutput", "fovMultiTrackRec");
+
+	if (fovMultitrackRec) {
+		fov.initSystem(fileOutput);
+		fov.syncSources();
+	}
+
 	UpdateRecording();
 	if (!ConfigureRecording(false))
 		return false;
+	if (fovMultitrackRec) {
+		fov.syncSources();
+	}
 	if (!obs_output_start(fileOutput)) {
 		QString error_reason;
 		const char *error = obs_output_get_last_error(fileOutput);
