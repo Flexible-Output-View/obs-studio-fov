@@ -8,6 +8,22 @@
 
 using namespace std;
 
+/**
+ * @brief Check if FOV multitrack local recording is availabled using the selected output
+ * @param conf Config
+ */
+static bool isFOVMultitrackRecAvailable(config_t * conf)
+{
+	const char *recFormat = config_get_string(conf, "SimpleOutput", "RecFormat2");
+
+	if (strcmp(recFormat, "hybrid_mp4") == 0)
+		return true;
+	else if (strcmp(recFormat, "hybrid_mov") == 0)
+		return true;
+	return false;
+}
+
+
 static bool CreateSimpleAACEncoder(OBSEncoder &res, int bitrate, const char *name, size_t idx)
 {
 	const char *id_ = GetSimpleAACEncoderForBitrate(bitrate);
@@ -879,8 +895,15 @@ bool SimpleOutput::StartRecording()
 	bool fovMultitrackRec = config_get_bool(main->Config(), "SimpleOutput", "fovMultiTrackRec");
 
 	if (fovMultitrackRec) {
-		fov.initSystem(fileOutput);
-		fov.syncSources();
+		if (!isFOVMultitrackRecAvailable(main->Config())) {
+			QString error_reason;
+			error_reason = QT_UTF8("The selected recording format is not compatible with multitrack recording. Please select Hybrid MP4 or Hybrid MOV.");
+			QMessageBox::critical(main, QTStr("Output.StartRecordingFailed"), error_reason);
+			return false;
+		} else {
+			fov.initSystem(fileOutput);
+			fov.syncSources();
+		}
 	}
 
 	UpdateRecording();
