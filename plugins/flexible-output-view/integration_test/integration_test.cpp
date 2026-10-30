@@ -149,7 +149,7 @@ void configure_service(OBSServiceAutoRelease &service)
 	obs_data_set_array(data, "videoTrackNames", videoArray);
 	obs_data_set_array(data, "audioTrackNames", audioArray);
 
-	service = obs_service_create("fov_service", "FOV Test Service", data, nullptr);
+	service = obs_service_create("fov_service_srt", "FOV Test Service / SRT", data, nullptr);
 }
 
 void start_fov()
