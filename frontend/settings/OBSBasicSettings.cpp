@@ -442,6 +442,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	HookWidget(ui->advOutRecType,        COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecPath,        EDIT_CHANGED,   OUTPUTS_CHANGED);
 	HookWidget(ui->advOutNoSpace,        CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advfovBasicRecordMultitrack,        CHECK_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecFormat,      COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecEncoder,     COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecAEncoder,    COMBO_CHANGED,  OUTPUTS_CHANGED);
@@ -1968,6 +1969,7 @@ void OBSBasicSettings::LoadAdvOutputRecordingSettings()
 	const char *format = config_get_string(main->Config(), "AdvOut", "RecFormat2");
 	const char *path = config_get_string(main->Config(), "AdvOut", "RecFilePath");
 	bool noSpace = config_get_bool(main->Config(), "AdvOut", "RecFileNameWithoutSpace");
+	bool fovMultiTrackRec = config_get_bool(main->Config(), "AdvOut", "fovMultiTrackRec");
 	const char *rescaleRes = config_get_string(main->Config(), "AdvOut", "RecRescaleRes");
 	int rescaleFilter = config_get_int(main->Config(), "AdvOut", "RecRescaleFilter");
 	const char *muxCustom = config_get_string(main->Config(), "AdvOut", "RecMuxerCustom");
@@ -1982,6 +1984,7 @@ void OBSBasicSettings::LoadAdvOutputRecordingSettings()
 	ui->advOutRecType->setCurrentIndex(typeIndex);
 	ui->advOutRecPath->setText(path);
 	ui->advOutNoSpace->setChecked(noSpace);
+	ui->advfovBasicRecordMultitrack->setChecked(fovMultiTrackRec);
 	ui->advOutRecRescale->setCurrentText(rescaleRes);
 	int idx = ui->advOutRecRescaleFilter->findData(rescaleFilter);
 	if (idx != -1)
@@ -3441,6 +3444,7 @@ void OBSBasicSettings::SaveOutputSettings()
 
 	SaveEdit(ui->advOutRecPath, "AdvOut", "RecFilePath");
 	SaveCheckBox(ui->advOutNoSpace, "AdvOut", "RecFileNameWithoutSpace");
+	SaveCheckBox(ui->advfovBasicRecordMultitrack, "AdvOut", "fovMultiTrackRec");
 	SaveComboData(ui->advOutRecFormat, "AdvOut", "RecFormat2");
 	SaveComboData(ui->advOutRecEncoder, "AdvOut", "RecEncoder");
 	SaveComboData(ui->advOutRecAEncoder, "AdvOut", "RecAudioEncoder");

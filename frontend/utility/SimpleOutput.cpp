@@ -1,4 +1,5 @@
 #include "SimpleOutput.hpp"
+#include "utility/FOVSystem.hpp"
 
 #include <utility/audio-encoders.hpp>
 #include <utility/StartMultiTrackVideoStreamingGuard.hpp>
@@ -7,21 +8,6 @@
 #include <qt-wrappers.hpp>
 
 using namespace std;
-
-/**
- * @brief Check if FOV multitrack local recording is availabled using the selected output
- * @param conf Config
- */
-static bool isFOVMultitrackRecAvailable(config_t * conf)
-{
-	const char *recFormat = config_get_string(conf, "SimpleOutput", "RecFormat2");
-
-	if (strcmp(recFormat, "hybrid_mp4") == 0)
-		return true;
-	else if (strcmp(recFormat, "hybrid_mov") == 0)
-		return true;
-	return false;
-}
 
 
 static bool CreateSimpleAACEncoder(OBSEncoder &res, int bitrate, const char *name, size_t idx)
