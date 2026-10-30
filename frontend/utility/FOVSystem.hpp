@@ -19,6 +19,7 @@
 
 #include "media-io/video-io.h"
 #include "obs.h"
+#include "util/config-file.h"
 
 /**
  * @brief Align rendering dimensions to the nearest bitwise boundary.
@@ -322,4 +323,19 @@ inline bool checkIsFOV(const obs_service_t *service)
 		return false;
 	}
 	return (strcmp(obs_service_get_id(service), "fov_service") == 0);
+}
+
+/**
+ * @brief Check if FOV multitrack local recording is availabled using the selected output
+ * @param conf Config
+ */
+inline bool isFOVMultitrackRecAvailable(config_t * conf, const char *section = "SimpleOutput", const char *name = "RecFormat2")
+{
+	const char *recFormat = config_get_string(conf, section, name);
+
+	if (strcmp(recFormat, "hybrid_mp4") == 0)
+		return true;
+	else if (strcmp(recFormat, "hybrid_mov") == 0)
+		return true;
+	return false;
 }
