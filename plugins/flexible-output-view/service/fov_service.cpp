@@ -9,7 +9,9 @@
 #include "fov_service.hpp"
 #include "curl_wrapper.hpp"
 #include "obs-data.h"
+#include "obs.h"
 #include "util/base.h"
+#include <exception>
 #include <nlohmann/json_fwd.hpp>
 #include <regex>
 #include <string>
@@ -100,12 +102,13 @@ bool obs_array_to_json(obs_data_array_t *array, nlohmann::json &json_out, const 
  * @param[in] settings Pointer to the OBS settings data object.
  * @param[in] service Unused pointer to the associated OBS service context object.
  */
-FOVService::FOVService(obs_data_t *settings, obs_service_t *) noexcept
+FOVService::FOVService(obs_data_t *settings, obs_service_t *service) noexcept
 	: backendURL(""),
-	  srtURL(""),
+	  ingestURL(""),
 	  nbVideoTracks(1),
 	  nbAudioTracks(1),
-	  started(false)
+	  started(false),
+	  service(service)
 {
 	blog(LOG_INFO, "FOV Service created\n");
 	update(settings);
@@ -214,6 +217,8 @@ const char *FOVService::getConnectInfo(uint32_t type) noexcept
 	switch ((enum obs_service_connect_info)type) {
 	case OBS_SERVICE_CONNECT_INFO_SERVER_URL:
 		return getURL();
+	case OBS_SERVICE_CONNECT_INFO_STREAM_KEY:
+		return streamKey.c_str();
 	default:
 		break;
 	}
@@ -226,6 +231,8 @@ const char *FOVService::getConnectInfo(uint32_t type) noexcept
  */
 const char *FOVService::getURL(void) noexcept
 {
+	std::string APIRoute = backendURL + API_FFMPEG_START_ROUTE;
+
 	if (backendURL.empty() || nbVideoTracks == 0) {
 		blog(LOG_WARNING, "FOV Service is misconfigured nbVideoTracks:%ld nbAudioTracks:%ld server:%s\n",
 		     nbVideoTracks, nbAudioTracks, backendURL.c_str());
@@ -233,10 +240,19 @@ const char *FOVService::getURL(void) noexcept
 	}
 
 	if (started) {
-		return srtURL.c_str();
+		return ingestURL.c_str();
 	}
 
-	const std::string APIRoute = backendURL + API_FFMPEG_START_ROUTE;
+	bool ismoq = false;
+	std::string protocol;
+	if (service != nullptr) {
+		protocol = obs_service_get_protocol(service);
+	}
+	if (protocol == "MoQ") {
+		ismoq = true;
+		APIRoute = backendURL + API_MOQ_START_ROUTE;
+	}
+
 
 	if (!checkURL(APIRoute)) {
 		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
@@ -250,7 +266,8 @@ const char *FOVService::getURL(void) noexcept
 	jsonPayload["audioTracks"] = nbAudioTracks;
 	jsonPayload["audioTrackNames"] = audioTrackNames;
 
-	blog(LOG_INFO, "FOV Service making request to backend %s\n", APIRoute.c_str());
+	blog(LOG_INFO, "FOV Service making request to backend %s\nPayload: %s\n", APIRoute.c_str(),
+	     jsonPayload.dump().c_str());
 	try {
 		SimpleCurlRequest request(APIRoute, SimpleCurlRequest::HTTP_POST);
 
@@ -265,20 +282,20 @@ const char *FOVService::getURL(void) noexcept
 			     request.getResponseContent().c_str());
 			started = true;
 			nlohmann::json response = nlohmann::json::parse(request.getResponseContent());
-			if (!response.contains("srtUrl")) {
+			if (!response.contains("ingestUrl")) {
 				blog(LOG_ERROR, "FOV Service received incomplete response: %s\n",
 				     request.getResponseContent().c_str());
 				return "\0";
 			}
-			srtURL = response["srtUrl"].get<std::string>();
+			ingestURL = response["ingestUrl"].get<std::string>();
 
-			if (!checkURL(srtURL, "srt")) {
-				blog(LOG_ERROR, "FOV Service got invalid SRT URL: %s\n", srtURL.c_str());
+			if (!checkURL(ingestURL, (ismoq) ? "http|https" : "srt")) {
+				blog(LOG_ERROR, "FOV Service got invalid ingest URL: %s\n", ingestURL.c_str());
 				return "\0";
 			}
 
-			blog(LOG_INFO, "FOV Service got SRT url = %s\n", srtURL.c_str());
-			return srtURL.c_str();
+			blog(LOG_INFO, "FOV Service got ingest url = %s\n", ingestURL.c_str());
+			return ingestURL.c_str();
 
 		} else {
 			blog(LOG_ERROR, "FOV: Backend returned error [HTTP %d]: %s\n", request.getResponseCode(),
@@ -286,7 +303,7 @@ const char *FOVService::getURL(void) noexcept
 			return "\0";
 		}
 
-	} catch (const SimpleCurlException &e) {
+	} catch (const std::exception &e) {
 		blog(LOG_ERROR, "FOV Service error: %s\n", e.what());
 		return "\0";
 	}
@@ -308,7 +325,15 @@ void FOVService::deactivate(void) noexcept
 {
 	blog(LOG_INFO, "FOV Service deactivated\n");
 
-	const std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
+	std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
+	std::string protocol;
+
+	if (service != nullptr) {
+		protocol = obs_service_get_protocol(service);
+	}
+	if (protocol == "MoQ") {
+		APIRoute = backendURL + API_MOQ_STOP_ROUTE;
+	}
 
 	if (!checkURL(APIRoute)) {
 		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
@@ -342,11 +367,11 @@ extern "C" {
 /**
  * @brief Register the custom FOV service module with the OBS framework core.
  */
-void registerFOVService(void)
+void registerFOVServiceSRT(void)
 {
 	struct obs_service_info info = {};
 
-	info.id = "fov_service";
+	info.id = "fov_service_srt";
 	info.get_output_type = [](void *) -> const char * {
 		return "ffmpeg_mpegts_muxer";
 	};
@@ -367,6 +392,60 @@ void registerFOVService(void)
 	};
 	info.get_protocol = [](void *) -> const char * {
 		return "SRT";
+	};
+	info.get_url = [](void *priv_data) -> const char * {
+		return static_cast<FOVService *>(priv_data)->getURL();
+	};
+	info.apply_encoder_settings = [](void *priv_data, obs_data_t *video_settings, obs_data_t *audio_settings) {
+		static_cast<FOVService *>(priv_data)->applyEncoderSettings(video_settings, audio_settings);
+	};
+	info.can_try_to_connect = [](void *) -> bool {
+		return true;
+	};
+	info.get_connect_info = [](void *priv_data, uint32_t type) -> const char * {
+		return static_cast<FOVService *>(priv_data)->getConnectInfo((enum obs_service_connect_info)type);
+	};
+	info.activate = [](void *priv_data, obs_data_t *settings) -> void {
+		return static_cast<FOVService *>(priv_data)->activate(settings);
+	};
+	info.deactivate = [](void *priv_data) -> void {
+		return static_cast<FOVService *>(priv_data)->deactivate();
+	};
+	info.get_supported_video_codecs = [](void *) -> const char ** {
+		return fov_video_codecs;
+	};
+	info.get_supported_audio_codecs = [](void *) -> const char ** {
+		return fov_audio_codecs;
+	};
+
+	obs_register_service(&info);
+}
+
+void registerFOVServiceMOQ(void)
+{
+	struct obs_service_info info = {};
+
+	info.id = "fov_service_moq";
+	info.get_output_type = [](void *) -> const char * {
+		return "fov_moq_output";
+	};
+	info.get_name = [](void *priv_data) -> const char * {
+		return static_cast<FOVService *>(priv_data)->getName();
+	};
+	info.create = [](obs_data_t *settings, obs_service_t *service) -> void * {
+		return new FOVService(settings, service);
+	};
+	info.destroy = [](void *priv_data) {
+		delete static_cast<FOVService *>(priv_data);
+	};
+	info.update = [](void *priv_data, obs_data_t *settings) {
+		static_cast<FOVService *>(priv_data)->update(settings);
+	};
+	info.get_properties = [](void *priv_data) -> obs_properties_t * {
+		return static_cast<FOVService *>(priv_data)->getProperties();
+	};
+	info.get_protocol = [](void *) -> const char * {
+		return "MoQ";
 	};
 	info.get_url = [](void *priv_data) -> const char * {
 		return static_cast<FOVService *>(priv_data)->getURL();
