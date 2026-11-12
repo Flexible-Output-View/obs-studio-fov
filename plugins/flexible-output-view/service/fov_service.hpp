@@ -117,6 +117,7 @@ private:
 	nlohmann::json audioTrackNames;
 	bool started;           /**< Internal state tracking flag confirming if backend session signaling has executed successfully. */
      obs_service_t *service;
+	bool active;            /**< True once OBS has successfully activated the service for the current stream. */
 };
 
 bool obs_array_to_json(obs_data_array_t *array, nlohmann::json &json_out, const std::string &objectName = "");
