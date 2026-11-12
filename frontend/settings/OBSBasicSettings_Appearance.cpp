@@ -1,4 +1,5 @@
 #include "OBSBasicSettings.hpp"
+#include "util/base.h"
 
 #include <OBSApp.hpp>
 #include <utility/platform.hpp>
@@ -102,6 +103,8 @@ void OBSBasicSettings::LoadAppearanceSettings(bool reload)
 	QAbstractButton *densityButton = ui->appearanceDensityButtonGroup->button(densityId);
 	if (densityButton) {
 		densityButton->setChecked(true);
+	} else {
+		blog(LOG_ERROR, "[DEBUG]: The theme UI could not be created !!!");
 	}
 	updateAppearanceControls();
 
@@ -158,6 +161,8 @@ void OBSBasicSettings::enableAppearanceDensityControls(bool enable)
 {
 	const QList<QAbstractButton *> buttons = ui->appearanceDensityButtonGroup->buttons();
 	for (QAbstractButton *button : buttons) {
-		button->setEnabled(enable);
+		if (button != nullptr) {
+			button->setEnabled(enable);
+		}
 	}
 }
