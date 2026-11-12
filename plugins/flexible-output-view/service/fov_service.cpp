@@ -78,7 +78,8 @@ FOVService::FOVService(obs_data_t *settings, obs_service_t *) noexcept
 	  srtURL(""),
 	  nbVideoTracks(1),
 	  nbAudioTracks(1),
-	  started(false)
+	  started(false),
+	  active(false)
 {
 	blog(LOG_INFO, "FOV Service created\n");
 	update(settings);
@@ -202,7 +203,11 @@ const char *FOVService::getURL(void) noexcept
 		return nullptr;
 	}
 
-	if (started) {
+	// Only reuse a cached URL once the service is actually active. If OBS
+	// failed before activating it (for example because the SRT listener was
+	// unavailable), the next start must register again instead of reusing a
+	// dead session.
+	if (started && active) {
 		return srtURL.c_str();
 	}
 
@@ -233,6 +238,13 @@ const char *FOVService::getURL(void) noexcept
 			blog(LOG_INFO, "FOV Service got SRT url = %s\n", srtURL.c_str());
 			return srtURL.c_str();
 
+		} else if (request.getResponseCode() == 409 && !srtURL.empty()) {
+			// The backend still owns the previous registration (its SRT
+			// listener is alive), so the cached URL is still valid.
+			blog(LOG_WARNING, "FOV: Stream already registered, reusing SRT url = %s\n", srtURL.c_str());
+			started = true;
+			return srtURL.c_str();
+
 		} else {
 			blog(LOG_ERROR, "FOV: Backend returned error [HTTP %d]: %s\n", request.getResponseCode(),
 			     request.getResponseContent().c_str());
@@ -251,6 +263,7 @@ const char *FOVService::getURL(void) noexcept
  */
 void FOVService::activate(obs_data_t *) noexcept
 {
+	active = true;
 	blog(LOG_INFO, "FOV Service activated\n");
 }
 
@@ -283,6 +296,7 @@ void FOVService::deactivate(void) noexcept
 	}).detach();
 
 	started = false;
+	active = false;
 }
 
 extern "C" {
