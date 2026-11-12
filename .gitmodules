@@ -7,3 +7,6 @@
 [submodule "plugins/obs-websocket"]
 	path = plugins/obs-websocket
 	url = https://github.com/obsproject/obs-websocket.git
+[submodule "deps/moq"]
+	path = deps/moq
+	url = https://github.com/Flexible-Output-View/moq
