@@ -22,6 +22,10 @@ static OBSSourceAutoRelease g_sourceA;
 static OBSSourceAutoRelease g_sourceB;
 static OBSServiceAutoRelease g_fovService;
 
+#ifndef FOV_INTEGRATION_TEST_KEY
+#define FOV_INTEGRATION_TEST_KEY "IntegrationTestKey"
+#endif
+
 void disable_default_audio_sources()
 {
 	blog(LOG_INFO, "[FOV Test] Unbinding default desktop and mic audio sources...");
@@ -128,7 +132,7 @@ void configure_service(OBSServiceAutoRelease &service)
 	OBSDataArrayAutoRelease audioArray = obs_data_array_create();
 
 	obs_data_set_string(data, "server", "http://localhost:4000");
-	obs_data_set_string(data, "key", "TestIntegration");
+	obs_data_set_string(data, "key", FOV_INTEGRATION_TEST_KEY);
 
 	for (int i = 1; i <= 2; i++) {
 		std::stringstream is;
@@ -186,12 +190,12 @@ void start_fov()
 	if (g_fovService) {
 		obs_frontend_set_streaming_service(g_fovService);
 		blog(LOG_INFO,
-		     "[FOV Test] Service attached. Deferring stream start by 2 seconds for media & signal initialization...");
+		     "[FOV Test] Service attached. Deferring stream start by 10 seconds for media & signal initialization...");
 
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 
-        obs_frontend_streaming_start();
-        blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
+		obs_frontend_streaming_start();
+		blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
 	} else {
 		blog(LOG_ERROR, "[FOV Test] Failed to create FOV streaming service!");
 		exit(42);
@@ -222,6 +226,8 @@ bool obs_module_load(void)
 
 void obs_module_unload(void)
 {
-    return;
+	g_fovService = nullptr;
+	g_sourceA = nullptr;
+	g_sourceB = nullptr;
 }
 }
