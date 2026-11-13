@@ -22,6 +22,10 @@ static OBSSourceAutoRelease g_sourceA;
 static OBSSourceAutoRelease g_sourceB;
 static OBSServiceAutoRelease g_fovService;
 
+#ifndef FOV_INTEGRATION_TEST_KEY
+#define FOV_INTEGRATION_TEST_KEY "IntegrationTestKey"
+#endif
+
 void disable_default_audio_sources()
 {
 	blog(LOG_INFO, "[FOV Test] Unbinding default desktop and mic audio sources...");
@@ -128,7 +132,7 @@ void configure_service(OBSServiceAutoRelease &service)
 	OBSDataArrayAutoRelease audioArray = obs_data_array_create();
 
 	obs_data_set_string(data, "server", "http://localhost:4000");
-	obs_data_set_string(data, "key", "TestIntegration");
+	obs_data_set_string(data, "key", FOV_INTEGRATION_TEST_KEY);
 
 	for (int i = 1; i <= 2; i++) {
 		std::stringstream is;
