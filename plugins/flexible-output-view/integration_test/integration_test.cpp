@@ -186,12 +186,12 @@ void start_fov()
 	if (g_fovService) {
 		obs_frontend_set_streaming_service(g_fovService);
 		blog(LOG_INFO,
-		     "[FOV Test] Service attached. Deferring stream start by 2 seconds for media & signal initialization...");
+		     "[FOV Test] Service attached. Deferring stream start by 10 seconds for media & signal initialization...");
 
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 
-        obs_frontend_streaming_start();
-        blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
+		obs_frontend_streaming_start();
+		blog(LOG_INFO, "[FOV Test] Streaming started successfully.");
 	} else {
 		blog(LOG_ERROR, "[FOV Test] Failed to create FOV streaming service!");
 		exit(42);
@@ -222,6 +222,8 @@ bool obs_module_load(void)
 
 void obs_module_unload(void)
 {
-    return;
+	g_fovService = nullptr;
+	g_sourceA = nullptr;
+	g_sourceB = nullptr;
 }
 }
