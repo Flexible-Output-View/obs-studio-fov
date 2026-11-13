@@ -2336,7 +2336,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>758</width>
-                     <height>750</height>
+                     <height>789</height>
                     </rect>
                    </property>
                    <property name="sizePolicy">
@@ -2538,25 +2538,7 @@
                       <property name="title">
                        <string>Basic.Settings.Output.Adv.Recording</string>
                       </property>
-                      <layout class="QFormLayout" name="formLayout_6">
-                       <property name="fieldGrowthPolicy">
-                        <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-                       </property>
-                       <property name="labelAlignment">
-                        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-                       </property>
-                       <property name="leftMargin">
-                        <number>9</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>2</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>9</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>9</number>
-                       </property>
+                      <layout class="QFormLayout" name="formLayout_5">
                        <item row="0" column="0">
                         <widget class="QLabel" name="label_18">
                          <property name="minimumSize">
@@ -2596,16 +2578,6 @@
                           </widget>
                          </item>
                         </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QCheckBox" name="simpleNoSpace">
-                         <property name="text">
-                          <string>Basic.Settings.Output.NoSpaceFileName</string>
-                         </property>
-                         <property name="checked">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
                        </item>
                        <item row="2" column="0">
                         <widget class="QLabel" name="label_26">
@@ -2892,6 +2864,30 @@
                        </item>
                        <item row="7" column="1">
                         <widget class="QLineEdit" name="simpleOutMuxCustom"/>
+                       </item>
+                       <item row="1" column="1">
+                        <layout class="QVBoxLayout" name="verticalLayout_36">
+                         <item>
+                          <widget class="QCheckBox" name="simpleNoSpace">
+                           <property name="text">
+                            <string>Basic.Settings.Output.NoSpaceFileName</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QCheckBox" name="fovBasicRecordMultitrack">
+                           <property name="text">
+                            <string>Basic.Settings.Output.UseFOVMultitrackRecording</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
                       </layout>
                      </widget>
@@ -3549,28 +3545,7 @@
                               <property name="title">
                                <string>Basic.Settings.Output.Adv.Recording.Settings</string>
                               </property>
-                              <layout class="QFormLayout" name="formLayout_16">
-                               <property name="fieldGrowthPolicy">
-                                <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-                               </property>
-                               <property name="labelAlignment">
-                                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-                               </property>
-                               <property name="formAlignment">
-                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-                               </property>
-                               <property name="leftMargin">
-                                <number>9</number>
-                               </property>
-                               <property name="topMargin">
-                                <number>2</number>
-                               </property>
-                               <property name="rightMargin">
-                                <number>9</number>
-                               </property>
-                               <property name="bottomMargin">
-                                <number>9</number>
-                               </property>
+                              <layout class="QFormLayout" name="formLayout_6">
                                <item row="0" column="0">
                                 <widget class="QLabel" name="label_32">
                                  <property name="sizePolicy">
@@ -3640,20 +3615,34 @@
                                 </spacer>
                                </item>
                                <item row="1" column="1">
-                                <widget class="QCheckBox" name="advOutNoSpace">
-                                 <property name="sizePolicy">
-                                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                                   <horstretch>0</horstretch>
-                                   <verstretch>0</verstretch>
-                                  </sizepolicy>
-                                 </property>
-                                 <property name="text">
-                                  <string>Basic.Settings.Output.NoSpaceFileName</string>
-                                 </property>
-                                 <property name="checked">
-                                  <bool>true</bool>
-                                 </property>
-                                </widget>
+                                <layout class="QVBoxLayout" name="verticalLayout_37">
+                                 <item>
+                                  <widget class="QCheckBox" name="advOutNoSpace">
+                                   <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                                     <horstretch>0</horstretch>
+                                     <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                   </property>
+                                   <property name="text">
+                                    <string>Basic.Settings.Output.NoSpaceFileName</string>
+                                   </property>
+                                   <property name="checked">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item>
+                                  <widget class="QCheckBox" name="advfovBasicRecordMultitrack">
+                                   <property name="text">
+                                    <string>Basic.Settings.Output.UseFOVMultitrackRecording</string>
+                                   </property>
+                                   <property name="checked">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                </layout>
                                </item>
                                <item row="2" column="0">
                                 <widget class="QLabel" name="label_43">
@@ -3675,6 +3664,40 @@
                                  </property>
                                  <property name="currentText">
                                   <string/>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="3" column="0">
+                                <widget class="QLabel" name="advOutRecEncLabel">
+                                 <property name="text">
+                                  <string>Basic.Settings.Output.Encoder.Video</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="3" column="1">
+                                <widget class="QComboBox" name="advOutRecEncoder">
+                                 <property name="sizePolicy">
+                                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                   <horstretch>0</horstretch>
+                                   <verstretch>0</verstretch>
+                                  </sizepolicy>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="4" column="0">
+                                <widget class="QLabel" name="advOutRecAEncLabel">
+                                 <property name="text">
+                                  <string>Basic.Settings.Output.Encoder.Audio</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="4" column="1">
+                                <widget class="QComboBox" name="advOutRecAEncoder">
+                                 <property name="sizePolicy">
+                                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                   <horstretch>0</horstretch>
+                                   <verstretch>0</verstretch>
+                                  </sizepolicy>
                                  </property>
                                 </widget>
                                </item>
@@ -3884,40 +3907,6 @@
                                    </item>
                                   </layout>
                                  </widget>
-                                </widget>
-                               </item>
-                               <item row="4" column="0">
-                                <widget class="QLabel" name="advOutRecAEncLabel">
-                                 <property name="text">
-                                  <string>Basic.Settings.Output.Encoder.Audio</string>
-                                 </property>
-                                </widget>
-                               </item>
-                               <item row="4" column="1">
-                                <widget class="QComboBox" name="advOutRecAEncoder">
-                                 <property name="sizePolicy">
-                                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                   <horstretch>0</horstretch>
-                                   <verstretch>0</verstretch>
-                                  </sizepolicy>
-                                 </property>
-                                </widget>
-                               </item>
-                               <item row="3" column="0">
-                                <widget class="QLabel" name="advOutRecEncLabel">
-                                 <property name="text">
-                                  <string>Basic.Settings.Output.Encoder.Video</string>
-                                 </property>
-                                </widget>
-                               </item>
-                               <item row="3" column="1">
-                                <widget class="QComboBox" name="advOutRecEncoder">
-                                 <property name="sizePolicy">
-                                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                   <horstretch>0</horstretch>
-                                   <verstretch>0</verstretch>
-                                  </sizepolicy>
-                                 </property>
                                 </widget>
                                </item>
                                <item row="6" column="0">
@@ -4712,7 +4701,7 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>312</width>
+                            <width>754</width>
                             <height>630</height>
                            </rect>
                           </property>
@@ -6774,7 +6763,7 @@
               <x>0</x>
               <y>0</y>
               <width>245</width>
-              <height>28</height>
+              <height>19</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_33">
