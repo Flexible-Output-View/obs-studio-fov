@@ -87,5 +87,5 @@ jobs:
           path: |
             docker-web-stack.log
             obs-stdout.log
-            setup-stream.log
-            integration-test.log
+            obs-studio-fov/setup-stream.log
+            obs-studio-fov/integration-test.log
