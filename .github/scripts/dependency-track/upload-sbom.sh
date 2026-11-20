@@ -2,7 +2,7 @@
 # Upload one or more CycloneDX SBOMs to an OWASP Dependency-Track project.
 #
 # Usage:
-#   ./scripts/upload-sbom.sh --project obs-studio-fov [--version dev] sbom/*.cdx.json
+#   .github/scripts/dependency-track/upload-sbom.sh --project obs-studio-fov [--version dev] sbom/*.cdx.json
 #
 # Environment:
 #   DEPENDENCY_TRACK_URL      API server URL (default http://localhost:8081)

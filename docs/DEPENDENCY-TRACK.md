@@ -15,7 +15,7 @@ server and its bootstrap tooling live in `/Users/raphael/Code/DependencyTrack`
 
 ## What is in the SBOM
 
-C/C++ has no lockfile, so `scripts/generate-sbom.py` inventories what the
+C/C++ has no lockfile, so `.github/scripts/dependency-track/generate-sbom.py` inventories what the
 build actually pins:
 
 | Component | Version source |
@@ -40,11 +40,11 @@ while the bundle-level inventory is coarse: the OSV npm mirror enabled for
 ## Local usage
 
 ```bash
-./scripts/generate-sbom.sh          # writes sbom/obs-studio-fov.cdx.json
+.github/scripts/dependency-track/generate-sbom.sh          # writes sbom/obs-studio-fov.cdx.json
 
 export DEPENDENCY_TRACK_URL=http://localhost:8081
 export DEPENDENCY_TRACK_API_KEY=... # from DependencyTrack/integration.env
-./scripts/upload-sbom.sh --project obs-studio-fov --version dev sbom/*.cdx.json
+.github/scripts/dependency-track/upload-sbom.sh --project obs-studio-fov --version dev sbom/*.cdx.json
 ```
 
 Run the generator from a checkout **with initialized submodules**

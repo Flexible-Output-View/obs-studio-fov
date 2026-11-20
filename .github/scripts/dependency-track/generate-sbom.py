@@ -13,7 +13,7 @@ Bundled source-only libraries under deps/ carry no version metadata and are
 therefore not emitted (a version-less component cannot be matched against
 vulnerability data).
 
-Usage: python3 scripts/generate-sbom.py [-o sbom/obs-studio-fov.cdx.json]
+Usage: python3 .github/scripts/dependency-track/generate-sbom.py [-o sbom/obs-studio-fov.cdx.json]
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[3]
 VERSION_RE = re.compile(r"^v?(\d+\.\d+\.\d+)")
 GITHUB_RE = re.compile(r"github\.com[:/](?P<org>[^/]+)/(?P<repo>[^/.]+)")
 
