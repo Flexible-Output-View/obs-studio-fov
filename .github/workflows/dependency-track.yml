@@ -1,0 +1,70 @@
+name: Dependency-Track SBOM
+
+on:
+  push:
+    branches: [dev, master]
+    paths:
+      - "buildspec.json"
+      - ".gitmodules"
+      - ".github/scripts/dependency-track/generate-sbom.py"
+      - ".github/scripts/dependency-track/generate-sbom.sh"
+      - ".github/scripts/dependency-track/upload-sbom.sh"
+      - ".github/workflows/dependency-track.yml"
+  pull_request:
+    branches: [dev, master]
+    paths:
+      - "buildspec.json"
+      - ".gitmodules"
+      - ".github/scripts/dependency-track/generate-sbom.py"
+      - ".github/scripts/dependency-track/generate-sbom.sh"
+      - ".github/scripts/dependency-track/upload-sbom.sh"
+      - ".github/workflows/dependency-track.yml"
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: dependency-track-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: Generate and upload SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DEPENDENCY_TRACK_URL: ${{ vars.DEPENDENCY_TRACK_URL || secrets.DEPENDENCY_TRACK_URL }}
+      DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+      DEPENDENCY_TRACK_PROJECT_VERSION: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Generate CycloneDX SBOM
+        run: .github/scripts/dependency-track/generate-sbom.sh
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom/*.cdx.json
+          if-no-files-found: error
+
+      - name: Upload SBOM to Dependency-Track
+        if: env.DEPENDENCY_TRACK_URL != '' && env.DEPENDENCY_TRACK_API_KEY != ''
+        run: |
+          .github/scripts/dependency-track/upload-sbom.sh \
+            --project obs-studio-fov \
+            --version "$DEPENDENCY_TRACK_PROJECT_VERSION" \
+            sbom/*.cdx.json
+
+      - name: Explain skipped upload
+        if: env.DEPENDENCY_TRACK_URL == '' || env.DEPENDENCY_TRACK_API_KEY == ''
+        run: |
+          echo "DEPENDENCY_TRACK_URL / DEPENDENCY_TRACK_API_KEY are not configured;"
+          echo "SBOM was generated and archived but not uploaded."

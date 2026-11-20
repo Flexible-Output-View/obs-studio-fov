@@ -14,7 +14,7 @@ cd build_macos
 
 cmake --build . --config Debug
 
-read -p "Run OBS now ? [y/N]: " -n 1 -r
+read -p "Run OBS now ? [y/N]: " -n 1 -r 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 open ./frontend/Debug/obs.app

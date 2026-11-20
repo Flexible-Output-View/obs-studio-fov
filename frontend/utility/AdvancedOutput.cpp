@@ -792,6 +792,8 @@ bool AdvancedOutput::StartStreaming(obs_service_t *service)
 
 bool AdvancedOutput::StartRecording()
 {
+	bool fovMultitrackRec = config_get_bool(main->Config(), "AdvOut", "fovMultiTrackRec");
+
 	const char *path;
 	const char *recFormat;
 	const char *filenameFormat;
@@ -850,6 +852,18 @@ bool AdvancedOutput::StartRecording()
 		}
 
 		obs_output_update(fileOutput, settings);
+	}
+
+	if (fovMultitrackRec) {
+		if (!isFOVMultitrackRecAvailable(main->Config(), "AdvOut", "RecFormat2")) {
+			QString error_reason;
+			error_reason = QT_UTF8("The selected recording format is not compatible with multitrack recording. Please select Hybrid MP4 or Hybrid MOV.");
+			QMessageBox::critical(main, QTStr("Output.StartRecordingFailed"), error_reason);
+			return false;
+		} else {
+			fov.initSystem(fileOutput);
+			fov.syncSources();
+		}
 	}
 
 	if (!obs_output_start(fileOutput)) {

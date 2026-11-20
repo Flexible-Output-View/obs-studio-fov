@@ -11,6 +11,7 @@
 #include "obs-data.h"
 #include "util/base.h"
 #include <nlohmann/json_fwd.hpp>
+#include <regex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -18,6 +19,40 @@
 static const char *fov_audio_codecs[] = {"opus", "aac",
 					 nullptr};         /**< Array containing supported audio codec string names. */
 static const char *fov_video_codecs[] = {"h264", nullptr}; /**< Array containing supported video codec string names. */
+
+/**
+ * @brief Check if a URL is valid according to the defined protocols
+ * @param[in] url The input URL
+ * @param[in] protocols Valid protocols separated by | (e.g., "http|https|srt")
+ * @return true The URL is valid
+ * @return false The URL is invalid
+ */
+static bool checkURL(const std::string &url, const std::string &protocols = "http|https")
+{
+	if (url.empty() || url.size() <= 6 || protocols.empty()) {
+		return false;
+	}
+
+	const std::string domain =
+		"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+"
+		"(?:xn--[a-zA-Z0-9-]{2,59}|[a-zA-Z]{2,63})";
+
+	const std::string ipv4 =
+		"(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.){3}"
+		"(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])";
+
+	const std::string ipv6 =
+		"\\[(?:[0-9a-fA-F:]+(?::" + ipv4 + ")?)\\]";
+
+	const std::string regexPatternStr =
+		"^(?:" + protocols + ")://"
+		"(?:" + domain + "|localhost|" + ipv4 + "|" + ipv6 + ")"
+		"(?::[0-9]{1,5})?"
+		"(?:[/?#][^\\s]*)?$";
+
+	const std::regex pattern(regexPatternStr, std::regex::ECMAScript);
+	return std::regex_match(url, pattern);
+}
 
 /**
  * @brief Converts an obs data array to an nlohmann json structure.
@@ -78,7 +113,8 @@ FOVService::FOVService(obs_data_t *settings, obs_service_t *) noexcept
 	  srtURL(""),
 	  nbVideoTracks(1),
 	  nbAudioTracks(1),
-	  started(false)
+	  started(false),
+	  active(false)
 {
 	blog(LOG_INFO, "FOV Service created\n");
 	update(settings);
@@ -114,6 +150,11 @@ void FOVService::update(obs_data_t *settings) noexcept
 	std::string server = obs_data_get_string(settings, "server");
 	std::string key = obs_data_get_string(settings, "key");
 	if (!server.empty()) {
+		const std::string badSymbols = "/\\#-;=?!-[]@^`~{}<>*+.\"&";
+
+		if (badSymbols.find(server.at(server.length() - 1)) != badSymbols.npos) {
+			server.erase(server.end() - 1, server.end());
+		}
 		backendURL = server;
 	}
 	if (!key.empty()) {
@@ -141,8 +182,8 @@ void FOVService::update(obs_data_t *settings) noexcept
 	this->nbVideoTracks = newVideoTracks;
 	this->nbAudioTracks = newAudioTracks;
 
-	blog(LOG_INFO, "FOV Service settings changed: nbVideoTracks:%ld nbAudioTracks:%ld server:%s key:%s\n",
-	     nbVideoTracks, nbAudioTracks, backendURL.c_str(), streamKey.c_str());
+	blog(LOG_INFO, "FOV Service settings changed: nbVideoTracks:%ld nbAudioTracks:%ld server:%s\n", nbVideoTracks,
+	     nbAudioTracks, backendURL.c_str());
 }
 
 /**
@@ -155,8 +196,6 @@ obs_properties_t *FOVService::getProperties(void) noexcept
 
 	obs_properties_add_text(ppts, "server", "URL", OBS_TEXT_DEFAULT);
 	obs_properties_add_text(ppts, "key", "Stream Key", OBS_TEXT_DEFAULT);
-	obs_properties_add_int(ppts, "nbVideoTracks", "Number of video tracks", 1, 6, 1);
-	obs_properties_add_int(ppts, "nbAudioTracks", "Number of audio tracks", 1, 6, 1);
 
 	return ppts;
 }
@@ -202,11 +241,21 @@ const char *FOVService::getURL(void) noexcept
 		return nullptr;
 	}
 
-	if (started) {
+	// Only reuse a cached URL once the service is actually active. If OBS
+	// failed before activating it (for example because the SRT listener was
+	// unavailable), the next start must register again instead of reusing a
+	// dead session.
+	if (started && active) {
 		return srtURL.c_str();
 	}
 
 	const std::string APIRoute = backendURL + API_FFMPEG_START_ROUTE;
+
+	if (!checkURL(APIRoute)) {
+		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
+		return "\0";
+	}
+
 	nlohmann::json jsonPayload;
 	jsonPayload["streamId"] = streamKey;
 	jsonPayload["tracks"] = nbVideoTracks;
@@ -229,8 +278,29 @@ const char *FOVService::getURL(void) noexcept
 			     request.getResponseContent().c_str());
 			started = true;
 			nlohmann::json response = nlohmann::json::parse(request.getResponseContent());
-			srtURL = response["srtUrl"].get<std::string>();
+			if (!response.contains("srtUrl")) {
+				blog(LOG_ERROR, "FOV Service received incomplete response: %s\n",
+				     request.getResponseContent().c_str());
+				return "\0";
+			}
+			const std::string tmpSRT = response["srtUrl"].get<std::string>();
+
+			if (!checkURL(tmpSRT, "srt")) {
+				blog(LOG_ERROR, "FOV Service got invalid SRT URL: %s\n", tmpSRT.c_str());
+				this->srtURL.clear();
+				started = false;
+				return "\0";
+			}
+			this->srtURL = tmpSRT;
+
 			blog(LOG_INFO, "FOV Service got SRT url = %s\n", srtURL.c_str());
+			return srtURL.c_str();
+
+		} else if (request.getResponseCode() == 409 && !srtURL.empty()) {
+			// The backend still owns the previous registration (its SRT
+			// listener is alive), so the cached URL is still valid.
+			blog(LOG_WARNING, "FOV: Stream already registered, reusing SRT url = %s\n", srtURL.c_str());
+			started = true;
 			return srtURL.c_str();
 
 		} else {
@@ -251,6 +321,7 @@ const char *FOVService::getURL(void) noexcept
  */
 void FOVService::activate(obs_data_t *) noexcept
 {
+	active = true;
 	blog(LOG_INFO, "FOV Service activated\n");
 }
 
@@ -262,6 +333,15 @@ void FOVService::deactivate(void) noexcept
 	blog(LOG_INFO, "FOV Service deactivated\n");
 
 	const std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
+
+	started = false;
+	active = false;
+
+	if (!checkURL(APIRoute)) {
+		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
+		return;
+	}
+
 	nlohmann::json jsonPayload;
 	jsonPayload["streamId"] = streamKey;
 
@@ -282,7 +362,6 @@ void FOVService::deactivate(void) noexcept
 		}
 	}).detach();
 
-	started = false;
 }
 
 extern "C" {

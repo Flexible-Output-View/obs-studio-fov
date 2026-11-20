@@ -1,4 +1,5 @@
 #include "SimpleOutput.hpp"
+#include "utility/FOVSystem.hpp"
 
 #include <utility/audio-encoders.hpp>
 #include <utility/StartMultiTrackVideoStreamingGuard.hpp>
@@ -7,6 +8,7 @@
 #include <qt-wrappers.hpp>
 
 using namespace std;
+
 
 static bool CreateSimpleAACEncoder(OBSEncoder &res, int bitrate, const char *name, size_t idx)
 {
@@ -876,9 +878,26 @@ bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
 
 bool SimpleOutput::StartRecording()
 {
+	bool fovMultitrackRec = config_get_bool(main->Config(), "SimpleOutput", "fovMultiTrackRec");
+
+	if (fovMultitrackRec) {
+		if (!isFOVMultitrackRecAvailable(main->Config())) {
+			QString error_reason;
+			error_reason = QT_UTF8("The selected recording format is not compatible with multitrack recording. Please select Hybrid MP4 or Hybrid MOV.");
+			QMessageBox::critical(main, QTStr("Output.StartRecordingFailed"), error_reason);
+			return false;
+		} else {
+			fov.initSystem(fileOutput);
+			fov.syncSources();
+		}
+	}
+
 	UpdateRecording();
 	if (!ConfigureRecording(false))
 		return false;
+	if (fovMultitrackRec) {
+		fov.syncSources();
+	}
 	if (!obs_output_start(fileOutput)) {
 		QString error_reason;
 		const char *error = obs_output_get_last_error(fileOutput);
