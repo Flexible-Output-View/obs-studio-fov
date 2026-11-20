@@ -33,8 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
-      DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+      DEPENDENCY_TRACK_URL: ${{ vars.DEPENDENCY_TRACK_URL }}
+      DEPENDENCY_TRACK_API_KEY: ${{ vars.DEPENDENCY_TRACK_API_KEY }}
       DEPENDENCY_TRACK_PROJECT_VERSION: dev
     steps:
       - name: Checkout
