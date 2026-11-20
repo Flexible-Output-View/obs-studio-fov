@@ -9,6 +9,7 @@ This repository contains a customized distribution of **OBS Studio**, specifical
 * 📚 **Documentation:** Step-by-step guides for installation, building, and contributing are available in the [Official FOV Documentation](https://flexible-output-view.github.io/documentation-fov).
 * 🌐 **Web Stack:** Designed to work hand-in-hand with the [FOV Web Stack](https://github.com/Flexible-Output-View/web-fov).
 * 🔗 **Upstream Source:** For the official, unmodified project, refer to the [Upstream OBS Studio Repository](https://github.com/obsproject/obs-studio).
+* 🛡️ **Dependency Tracking:** See [docs/DEPENDENCY-TRACK.md](docs/DEPENDENCY-TRACK.md) for the OWASP Dependency-Track SBOM pipeline.
 
 ---
 
