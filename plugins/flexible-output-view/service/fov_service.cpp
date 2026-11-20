@@ -23,27 +23,35 @@ static const char *fov_video_codecs[] = {"h264", nullptr}; /**< Array containing
 /**
  * @brief Check if a URL is valid according to the defined protocols
  * @param[in] url The input URL
- * @param[in] protocols Valid protocols separated by |
+ * @param[in] protocols Valid protocols separated by | (e.g., "http|https|srt")
  * @return true The URL is valid
  * @return false The URL is invalid
  */
 static bool checkURL(const std::string &url, const std::string &protocols = "http|https")
 {
-	const auto regexPatternStr = "((" + protocols +
-				     ")://)"
-				     "(([a-zA-Z0-9.-]+\\.[a-z]{2,6})|"
-				     "(localhost)|"
-				     "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))"
-				     "(:\\d{1,5})?"
-				     "([/?][-a-zA-Z0-9@:%._\\+~#?&//=]*)?";
-
-	const std::regex pattern(regexPatternStr);
-
-	if (url.empty() || url.size() <= 6) {
+	if (url.empty() || url.size() <= 6 || protocols.empty()) {
 		return false;
 	}
 
-	return (std::regex_match(url, pattern));
+	const std::string domain =
+		"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+"
+		"(?:xn--[a-zA-Z0-9-]{2,59}|[a-zA-Z]{2,63})";
+
+	const std::string ipv4 =
+		"(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.){3}"
+		"(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])";
+
+	const std::string ipv6 =
+		"\\[(?:[0-9a-fA-F:]+(?::" + ipv4 + ")?)\\]";
+
+	const std::string regexPatternStr =
+		"^(?:" + protocols + ")://"
+		"(?:" + domain + "|localhost|" + ipv4 + "|" + ipv6 + ")"
+		"(?::[0-9]{1,5})?"
+		"(?:[/?#][^\\s]*)?$";
+
+	const std::regex pattern(regexPatternStr, std::regex::ECMAScript);
+	return std::regex_match(url, pattern);
 }
 
 /**
@@ -142,7 +150,7 @@ void FOVService::update(obs_data_t *settings) noexcept
 	std::string server = obs_data_get_string(settings, "server");
 	std::string key = obs_data_get_string(settings, "key");
 	if (!server.empty()) {
-		const std::string badSymbols = "/\\#-;=?!-[]_@^`~{}<>*+.\"&";
+		const std::string badSymbols = "/\\#-;=?!-[]@^`~{}<>*+.\"&";
 
 		if (badSymbols.find(server.at(server.length() - 1)) != badSymbols.npos) {
 			server.erase(server.end() - 1, server.end());
@@ -275,12 +283,15 @@ const char *FOVService::getURL(void) noexcept
 				     request.getResponseContent().c_str());
 				return "\0";
 			}
-			srtURL = response["srtUrl"].get<std::string>();
+			const std::string tmpSRT = response["srtUrl"].get<std::string>();
 
-			if (!checkURL(srtURL, "srt")) {
-				blog(LOG_ERROR, "FOV Service got invalid SRT URL: %s\n", srtURL.c_str());
+			if (!checkURL(tmpSRT, "srt")) {
+				blog(LOG_ERROR, "FOV Service got invalid SRT URL: %s\n", tmpSRT.c_str());
+				this->srtURL.clear();
+				started = false;
 				return "\0";
 			}
+			this->srtURL = tmpSRT;
 
 			blog(LOG_INFO, "FOV Service got SRT url = %s\n", srtURL.c_str());
 			return srtURL.c_str();
@@ -323,6 +334,9 @@ void FOVService::deactivate(void) noexcept
 
 	const std::string APIRoute = backendURL + API_FFMPEG_STOP_ROUTE;
 
+	started = false;
+	active = false;
+
 	if (!checkURL(APIRoute)) {
 		blog(LOG_ERROR, "FOV Service got invalid server URL: %s\n", APIRoute.c_str());
 		return;
@@ -348,8 +362,6 @@ void FOVService::deactivate(void) noexcept
 		}
 	}).detach();
 
-	started = false;
-	active = false;
 }
 
 extern "C" {
