@@ -6,15 +6,17 @@ on:
     paths:
       - "buildspec.json"
       - ".gitmodules"
-      - "scripts/generate-sbom.py"
-      - "scripts/generate-sbom.sh"
-      - "scripts/upload-sbom.sh"
+      - ".github/scripts/dependency-track/generate-sbom.py"
+      - ".github/scripts/dependency-track/generate-sbom.py"
+      - ".github/scripts/dependency-track/generate-sbom.sh"
+      - ".github/scripts/dependency-track/upload-sbom.sh"
       - ".github/workflows/dependency-track.yml"
   pull_request:
     branches: [dev, master]
     paths:
       - "buildspec.json"
       - ".gitmodules"
+      - ".github/scripts/dependency-track/generate-sbom.py"
       - ".github/workflows/dependency-track.yml"
   schedule:
     - cron: "0 5 * * 1"
