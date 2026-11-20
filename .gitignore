@@ -51,3 +51,5 @@ build-aux/flatpak-github-action-modified-*
 
 # Source record
 plugins/source-record/*
+# Generated SBOMs (see docs/DEPENDENCY-TRACK.md)
+/sbom/
