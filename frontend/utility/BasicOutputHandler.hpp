@@ -29,6 +29,7 @@ struct BasicOutputHandler {
 	OBSBasic *main;
 
 	FOVSystem fov;
+	FOVSystem fovRecording;
 
 	std::unique_ptr<MultitrackVideoOutput> multitrackVideo;
 	bool multitrackVideoActive = false;

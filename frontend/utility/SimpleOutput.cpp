@@ -361,6 +361,9 @@ void SimpleOutput::Update()
 
 	fov.updateVideoEncoderSettings(videoSettings, encoder_id);
 	fov.updateAudioEncoderSettings(audioSettings);
+
+	fovRecording.updateVideoEncoderSettings(videoSettings, encoder_id);
+	fovRecording.updateAudioEncoderSettings(audioSettings);
 }
 
 void SimpleOutput::UpdateRecordingAudioSettings()
@@ -682,6 +685,7 @@ SimpleOutput::~SimpleOutput()
         }
     }
     fov.clearSources();
+	fovRecording.clearSources();
 }
 
 bool SimpleOutput::StartStreaming(obs_service_t *service)
@@ -887,8 +891,8 @@ bool SimpleOutput::StartRecording()
 			QMessageBox::critical(main, QTStr("Output.StartRecordingFailed"), error_reason);
 			return false;
 		} else {
-			fov.initSystem(fileOutput);
-			fov.syncSources();
+			fovRecording.initSystem(fileOutput);
+			fovRecording.syncSources();
 		}
 	}
 
@@ -896,7 +900,7 @@ bool SimpleOutput::StartRecording()
 	if (!ConfigureRecording(false))
 		return false;
 	if (fovMultitrackRec) {
-		fov.syncSources();
+		fovRecording.syncSources();
 	}
 	if (!obs_output_start(fileOutput)) {
 		QString error_reason;
