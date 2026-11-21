@@ -1,5 +1,6 @@
 {
     "name": "v4l-utils",
+    "buildsystem": "autotools",
     "config-opts": [
         "--disable-static",
         "--disable-doxygen-doc",
@@ -14,9 +15,10 @@
     ],
     "sources": [
         {
-            "type": "archive",
-            "url": "https://linuxtv.org/downloads/v4l-utils/v4l-utils-1.22.0.tar.bz2",
-            "sha256": "1069e5d7909bcc563baeaadc3a5c496f0e658524c413cf7818816e37bfcea344"
+            "type": "git",
+            "url": "https://git.linuxtv.org/v4l-utils.git",
+            "tag": "v4l-utils-1.22.0",
+            "commit": "1eaf872161147677f04ed538800736a755921fbf"
         }
     ]
 }
