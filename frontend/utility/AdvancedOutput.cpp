@@ -254,6 +254,9 @@ void AdvancedOutput::UpdateStreamSettings()
 
 	obs_encoder_update(videoStreaming, settings);
 	fov.updateVideoEncoderSettings(settings, streamEncoder);
+	if (!recordingActive) {
+		fovRecording.updateVideoEncoderSettings(settings, streamEncoder);
+	}
 
 	for (int i = 0; i < MAX_OUTPUT_VIDEO_ENCODERS; i++) {
 		std::stringstream ss;
@@ -261,6 +264,9 @@ void AdvancedOutput::UpdateStreamSettings()
 		ss << "streamEncoder" << i << ".json";
 		OBSDataAutoRelease settings = GetDataFromJsonFile(ss.str().c_str());
 		fov.updateVideoEncoderSettings(settings, streamEncoder, i);
+		if (!recordingActive) {
+			fovRecording.updateVideoEncoderSettings(settings, streamEncoder, i);
+		}
 	}
 }
 
@@ -276,6 +282,7 @@ AdvancedOutput::~AdvancedOutput()
         }
     }
     fov.clearSources();
+	fovRecording.clearSources();
 }
 
 inline void AdvancedOutput::UpdateRecordingSettings()
@@ -552,6 +559,7 @@ inline void AdvancedOutput::UpdateAudioSettings()
 			obs_encoder_update(streamTrack[i], settings[i]);
 		}
 		fov.updateAudioEncoderSettings(settings[i], audioEncoder, (int) i);
+		fovRecording.updateAudioEncoderSettings(settings[i], audioEncoder, (int) i);
 	}
 }
 
@@ -861,8 +869,8 @@ bool AdvancedOutput::StartRecording()
 			QMessageBox::critical(main, QTStr("Output.StartRecordingFailed"), error_reason);
 			return false;
 		} else {
-			fov.initSystem(fileOutput);
-			fov.syncSources();
+			fovRecording.initSystem(fileOutput);
+			fovRecording.syncSources();
 		}
 	}
 
