@@ -3358,6 +3358,9 @@
                              <property name="currentIndex">
                               <number>-1</number>
                              </property>
+                             <property name="placeholderText">
+                              <string>Select a track here to change its settings...</string>
+                             </property>
                             </widget>
                            </item>
                            <item>
@@ -3525,7 +3528,7 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>751</width>
+                             <width>711</width>
                              <height>558</height>
                             </rect>
                            </property>
@@ -4709,7 +4712,7 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>751</width>
+                            <width>294</width>
                             <height>744</height>
                            </rect>
                           </property>
@@ -6864,7 +6867,7 @@
               <x>0</x>
               <y>0</y>
               <width>914</width>
-              <height>651</height>
+              <height>497</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_42">
