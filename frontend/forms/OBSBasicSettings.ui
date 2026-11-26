@@ -181,8 +181,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>758</width>
-              <height>1513</height>
+              <width>757</width>
+              <height>1586</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -944,8 +944,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1446</width>
-              <height>230</height>
+              <width>1415</width>
+              <height>651</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_1337">
@@ -1519,8 +1519,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>1324</width>
-               <height>928</height>
+               <width>1305</width>
+               <height>1043</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="streamkeyPageLayout">
@@ -2335,8 +2335,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>758</width>
-                     <height>789</height>
+                     <width>757</width>
+                     <height>901</height>
                     </rect>
                    </property>
                    <property name="sizePolicy">
@@ -3095,8 +3095,8 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>768</width>
-                         <height>557</height>
+                         <width>772</width>
+                         <height>546</height>
                         </rect>
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -3341,15 +3341,26 @@
                           </property>
                           <layout class="QVBoxLayout" name="advOutEncoderLayout">
                            <item>
-                            <widget class="QComboBox" name="advOutVTrackSelect">
-                             <property name="currentIndex">
-                              <number>0</number>
+                            <widget class="QCheckBox" name="FOVCustomTrackSettings">
+                             <property name="text">
+                              <string>FOV Use global settings for each track</string>
                              </property>
-                             <item>
-                              <property name="text">
-                               <string>All Tracks</string>
-                              </property>
-                             </item>
+                             <property name="checked">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QComboBox" name="advOutVTrackSelect">
+                             <property name="enabled">
+                              <bool>false</bool>
+                             </property>
+                             <property name="currentIndex">
+                              <number>-1</number>
+                             </property>
+                             <property name="placeholderText">
+                              <string>Select a track here to change its settings...</string>
+                             </property>
                             </widget>
                            </item>
                            <item>
@@ -3517,8 +3528,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>768</width>
-                             <height>518</height>
+                             <width>711</width>
+                             <height>558</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -4151,8 +4162,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>830</width>
-                             <height>578</height>
+                             <width>815</width>
+                             <height>679</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_27">
@@ -4701,8 +4712,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>754</width>
-                            <height>630</height>
+                            <width>294</width>
+                            <height>744</height>
                            </rect>
                           </property>
                           <layout class="QVBoxLayout" name="verticalLayout_28">
@@ -5783,8 +5794,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>783</width>
-              <height>626</height>
+              <width>761</width>
+              <height>719</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_50">
@@ -6762,8 +6773,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>245</width>
-              <height>19</height>
+              <width>240</width>
+              <height>30</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -6855,8 +6866,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>939</width>
-              <height>389</height>
+              <width>914</width>
+              <height>497</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_42">
@@ -7764,8 +7775,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>951</width>
-              <height>1147</height>
+              <width>931</width>
+              <height>1264</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_23">

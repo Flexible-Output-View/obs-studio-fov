@@ -29,6 +29,7 @@ void OBSBasicSettings::updateFOVSpecificUI()
 	int encoderIndex = -1;
 
 	if (isFOV) {
+		ui->FOVCustomTrackSettings->show();
 		ui->advOutVTrackSelect->show();
 		ui->advOutTrack1Name->setEnabled(false);
 		ui->advOutTrack2Name->setEnabled(false);
@@ -70,13 +71,13 @@ void OBSBasicSettings::updateFOVSpecificUI()
 			auto videoSources = main->outputHandler->fov.filterSources(sources, OBS_SOURCE_VIDEO, true);
 
 			QStringList videoItemList;
-			videoItemList.append("All Tracks");
 			for (const auto &source : videoSources) {
 				videoItemList.append(obs_source_get_name(source));
 			}
 
 			int index = ui->advOutVTrackSelect->currentIndex();
 			SaveComboIndex(ui->advOutVTrackSelect, "FOV", "VideoTrackSettingsSelect");
+			SaveCheckBox(ui->FOVCustomTrackSettings, "FOV", "VideoTrackSettingsUseGlobal");
 
 			ui->advOutVTrackSelect->clear();
 			ui->advOutVTrackSelect->addItems(videoItemList);
@@ -110,6 +111,7 @@ void OBSBasicSettings::updateFOVSpecificUI()
 		}
 
 	} else {
+		ui->FOVCustomTrackSettings->hide();
 		ui->advOutVTrackSelect->hide();
 		ui->advOutTrack1Name->setEnabled(true);
 		ui->advOutTrack2Name->setEnabled(true);
@@ -147,6 +149,16 @@ void OBSBasicSettings::updateFOVSpecificUI()
 			ui->advOutEncoder->setCurrentIndex(encoderIndex);
 		}
 	}
+}
+
+void OBSBasicSettings::updateFOVUseGlobalSettings()
+{
+	SaveCheckBox(ui->FOVCustomTrackSettings, "FOV", "VideoTrackSettingsUseGlobal");
+
+	if (ui->FOVCustomTrackSettings->isChecked()) {
+		ui->advOutVTrackSelect->clear();
+	}
+	LoadAdvOutputStreamingEncoderProperties(false);
 }
 
 void OBSBasicSettings::updateFOVTrackEncoderSettings()

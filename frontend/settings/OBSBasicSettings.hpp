@@ -138,6 +138,7 @@ private:
 
 	void updateFOVSpecificUI();
 	void updateFOVTrackEncoderSettings();
+	void updateFOVUseGlobalSettings();
 
 	bool ResFPSValid(obs_service_resolution *res_list, size_t res_count, int max_fps);
 
