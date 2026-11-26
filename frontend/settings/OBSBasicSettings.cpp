@@ -666,7 +666,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 #endif
 	connect(ui->advOutVTrackSelect, &QComboBox::currentIndexChanged, this,
 		&OBSBasicSettings::updateFOVTrackEncoderSettings);
-	connect(ui->FOVCustomTrackSettings, &QCheckBox::checkStateChanged, this,
+	connect(ui->FOVCustomTrackSettings, &QCheckBox::toggled, this,
 		&OBSBasicSettings::updateFOVUseGlobalSettings);
 	connect(ui->streamDelaySec, &QSpinBox::valueChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
 	connect(ui->outputMode, &QComboBox::currentIndexChanged, this, &OBSBasicSettings::UpdateStreamDelayEstimate);
