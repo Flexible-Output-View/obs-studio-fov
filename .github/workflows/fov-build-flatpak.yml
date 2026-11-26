@@ -44,4 +44,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload ${{ github.ref_name }} FOV-linux-x64-release.flatpak --clobber
+        run: |
+          git config --global --add safe.directory /__w/obs-studio-fov/obs-studio-fov
+          gh release upload ${{ github.ref_name }} FOV-linux-x64-release.flatpak --clobber
