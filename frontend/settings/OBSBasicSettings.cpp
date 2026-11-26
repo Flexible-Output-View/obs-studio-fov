@@ -2227,7 +2227,7 @@ void OBSBasicSettings::LoadOutputSettings()
 
 	LoadSimpleOutputSettings();
 	LoadAdvOutputStreamingSettings();
-	LoadAdvOutputStreamingEncoderProperties();
+	LoadAdvOutputStreamingEncoderProperties(true);
 
 	const char *type = config_get_string(main->Config(), "AdvOut", "AudioEncoder");
 	if (!SetComboByValue(ui->advOutAEncoder, type))
