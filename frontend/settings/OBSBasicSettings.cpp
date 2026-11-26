@@ -1837,6 +1837,7 @@ static inline QString makeFormatToolTip()
 
 void OBSBasicSettings::LoadAdvOutputStreamingSettings()
 {
+	config_set_default_bool(main->Config(), "FOV", "VideoTrackSettingsUseGlobal", true);
 	const char *rescaleRes = config_get_string(main->Config(), "AdvOut", "RescaleRes");
 	int rescaleFilter = config_get_int(main->Config(), "AdvOut", "RescaleFilter");
 	int trackIndex = config_get_int(main->Config(), "AdvOut", "TrackIndex");

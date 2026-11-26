@@ -155,8 +155,10 @@ void OBSBasicSettings::updateFOVUseGlobalSettings()
 {
 	SaveCheckBox(ui->FOVCustomTrackSettings, "FOV", "VideoTrackSettingsUseGlobal");
 
+	if (ui->FOVCustomTrackSettings->isChecked()) {
+		ui->advOutVTrackSelect->clear();
+	}
 	LoadAdvOutputStreamingEncoderProperties(false);
-	// updateFOVSpecificUI();
 }
 
 void OBSBasicSettings::updateFOVTrackEncoderSettings()
