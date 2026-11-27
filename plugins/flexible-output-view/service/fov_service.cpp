@@ -311,6 +311,7 @@ const char *FOVService::getURL(void) noexcept
 
 	} catch (const std::exception &e) {
 		blog(LOG_ERROR, "FOV Service error: %s\n", e.what());
+		started = false;
 		return "\0";
 	}
 }
