@@ -309,8 +309,9 @@ const char *FOVService::getURL(void) noexcept
 			return "\0";
 		}
 
-	} catch (const SimpleCurlException &e) {
+	} catch (const std::exception &e) {
 		blog(LOG_ERROR, "FOV Service error: %s\n", e.what());
+		started = false;
 		return "\0";
 	}
 }
